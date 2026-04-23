@@ -1,0 +1,149 @@
+.Navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.Navbar__inner {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.Navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 160px;
+}
+
+.Navbar__mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: #000;
+}
+
+
+.Navbar__brandText {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.Navbar__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex: 1;
+}
+
+.Navbar__link {
+  font-size: 13px;
+  text-decoration: none;
+  color: #000;
+  padding: 8px 6px;
+  border-radius: 10px;
+}
+
+
+
+.Navbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+  justify-content: flex-end;
+}
+
+.Navbar__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0b0b0c;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.Navbar__icon {
+  display: block;
+  color: #000;
+}
+
+.Navbar__icon--cta {
+  opacity: 0.9;
+  color: #fff;
+}
+
+.Navbar__iconBtn {
+  height: 36px;
+  width: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+
+.Navbar__pillBtn {
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.Navbar__pillLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+}
+
+.Navbar__burger {
+  width: 14px;
+  height: 12px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.Navbar__burger > span {
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+@media (max-width: 860px) {
+  .Navbar__nav {
+    display: none;
+  }
+  .Navbar__actions {
+    min-width: 0;
+  }
+  .Navbar__brand {
+    min-width: 0;
+  }
+}
+
