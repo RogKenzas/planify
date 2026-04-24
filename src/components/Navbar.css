@@ -64,14 +64,6 @@
   animation: fadeIn 0.8s ease-out forwards;
 }
 
-.Navbar__link:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #000;
-  transform: translateY(-2px);
-}
-
-
-
 .Navbar__actions {
   display: inline-flex;
   align-items: center;
@@ -93,7 +85,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   animation: fadeInScale 0.8s ease-out forwards;
-}
+} 
 
 .Navbar__cta:hover {
   transform: translateY(-2px);

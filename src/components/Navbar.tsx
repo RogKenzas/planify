@@ -73,7 +73,6 @@ export function Navbar() {
     <header className="Navbar animate-fade-in" role="banner">
       <div className="Navbar__inner">
         <Link className="Navbar__brand" to={nav.brand.href}>
-          {/* <span className="Navbar__mark" aria-hidden="true" /> */}
           <span className="Navbar__brandText">{nav.brand.label}</span>
         </Link>
 
