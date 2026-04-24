@@ -1,0 +1,25 @@
+.pill-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #000;
+    padding: 8px 12px;
+    border-radius: 50px;
+    border: 1.5px solid grey;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.pill-action:active {
+    transform: scale(0.97);
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
