@@ -1,11 +1,9 @@
 import '../styles/form.css';
 import screamVideo from '../assets/scream.mp4';
 import OnClickBtn from '../components/onClickbtn';
-import { BiMenuAltRight } from 'react-icons/bi';
-import { AppleIcon, BoxIcon } from 'lucide-react';
+import { BoxIcon } from 'lucide-react';
 import { GrGithub } from 'react-icons/gr';
-import { BsApple, BsMicrosoft } from 'react-icons/bs';
-import { FaMicrosoft } from 'react-icons/fa';
+import { BsApple } from 'react-icons/bs';
 
 export default function Login() {
     return (
@@ -49,7 +47,9 @@ export default function Login() {
                     </div>
                 </div>
 
-                
+                <div className="register_master">
+                    <p>Don't have an account ? <a href="/register">Register</a></p>
+                </div>
             </div>
         </div>
     );
