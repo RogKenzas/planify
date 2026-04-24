@@ -11,7 +11,13 @@
     user-select: none;
     font-size: 13px;
     font-weight: 500;
-    transition: background 0.2s ease, transform 0.1s ease;
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.3s ease;
+    animation: fadeInScale 0.6s ease-out forwards;
+}
+
+.pill-action:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .pill-action:active {

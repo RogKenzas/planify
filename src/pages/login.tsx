@@ -1,5 +1,8 @@
 export default function Login() {
     return(
-        <div>Hi there's the login page !!!</div>
+        <div className="animate-fade-in-up">
+            <h1>Connexion</h1>
+            <p>Page de connexion en développement...</p>
+        </div>
     );
 }

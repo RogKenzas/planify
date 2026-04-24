@@ -43,7 +43,7 @@ export function Navbar() {
         { label: 'Schedule', href: '/schedule' },
         { label: 'About', href: '/about' },
       ],
-      cta: { label: 'Login', href: '/auth/login' }
+      cta: { label: 'Login', href: '/login' }
     }),
     []
   )
@@ -70,7 +70,7 @@ export function Navbar() {
   }, [fallback])
 
   return (
-    <header className="Navbar" role="banner">
+    <header className="Navbar animate-fade-in" role="banner">
       <div className="Navbar__inner">
         <Link className="Navbar__brand" to={nav.brand.href}>
           {/* <span className="Navbar__mark" aria-hidden="true" /> */}

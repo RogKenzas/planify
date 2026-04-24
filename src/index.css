@@ -1,3 +1,7 @@
+/* Import des animations fade */
+@import './styles/animations.css';
+@import './styles/examples.css';
+
 /* Minimal base styles so the app boots cleanly */
 
 * {

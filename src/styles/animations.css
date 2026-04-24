@@ -1,0 +1,422 @@
+/* ========== FADE IN ANIMATIONS ========== */
+
+/* Fade in basic - au chargement */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Fade in du bas avec slide vers le haut */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade in de la gauche avec slide vers la droite */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Fade in de la droite avec slide vers la gauche */
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Fade in avec scale (grossissement) */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========== ANIMATION CLASSES ========== */
+
+/* Classes pour application automatique au chargement */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-left {
+    animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.animate-fade-in-right {
+    animation: fadeInRight 0.8s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+    animation: fadeInScale 0.8s ease-out forwards;
+}
+
+/* ========== ANIMATION AVEC DÉLAI ========== */
+
+.animate-fade-in-delay-100 {
+    animation: fadeIn 0.8s ease-out 0.1s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-delay-200 {
+    animation: fadeIn 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-delay-300 {
+    animation: fadeIn 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-up-delay-100 {
+    animation: fadeInUp 0.8s ease-out 0.1s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-up-delay-200 {
+    animation: fadeInUp 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-up-delay-300 {
+    animation: fadeInUp 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+}
+
+/* ========== ANIMATIONS AU SCROLL ========== */
+
+/* État initial pour éléments qui s'animeront au scroll */
+.scroll-animate-fade {
+    opacity: 0;
+}
+
+.scroll-animate-fade.visible {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.scroll-animate-fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.scroll-animate-fade-up.visible {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.scroll-animate-fade-left {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+.scroll-animate-fade-left.visible {
+    animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.scroll-animate-fade-right {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+.scroll-animate-fade-right.visible {
+    animation: fadeInRight 0.8s ease-out forwards;
+}
+
+.scroll-animate-fade-scale {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.scroll-animate-fade-scale.visible {
+    animation: fadeInScale 0.8s ease-out forwards;
+}
+
+/* ========== ANIMATIONS COMPLEXES ========== */
+
+/* Pulse effect */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Bounce effect au chargement */
+@keyframes fadeInBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-5px);
+    }
+    80% {
+        transform: translateY(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-bounce {
+    animation: fadeInBounce 0.8s ease-out forwards;
+}
+
+/* ========== ANIMATIONS DE DÉLAI SUPPLÉMENTAIRES ========== */
+
+/* Délais pour fadeInScale */
+.animate-fade-in-scale-delay-100 {
+    animation: fadeInScale 0.8s ease-out 0.1s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-scale-delay-200 {
+    animation: fadeInScale 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-scale-delay-300 {
+    animation: fadeInScale 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+}
+
+/* ========== ANIMATIONS DE TRANSITION DE PAGE ========== */
+
+@keyframes fadeOutUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+}
+
+.page-enter {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.page-exit {
+    animation: slideOutLeft 0.6s ease-in forwards;
+}
+
+/* ========== ANIMATIONS DE STAGGER AU SCROLL ========== */
+
+.stagger-item {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.stagger-item.visible {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Délais pour les stagger items */
+.stagger-item:nth-child(1).visible {
+    animation-delay: 0s;
+}
+
+.stagger-item:nth-child(2).visible {
+    animation-delay: 0.1s;
+}
+
+.stagger-item:nth-child(3).visible {
+    animation-delay: 0.2s;
+}
+
+.stagger-item:nth-child(4).visible {
+    animation-delay: 0.3s;
+}
+
+.stagger-item:nth-child(5).visible {
+    animation-delay: 0.4s;
+}
+
+/* ========== ANIMATIONS POUR FORMULAIRES ========== */
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.form-input {
+    animation: slideInFromLeft 0.6s ease-out forwards;
+}
+
+.form-button {
+    animation: slideInFromRight 0.6s ease-out forwards;
+}
+
+.form-input:nth-of-type(1) {
+    animation-delay: 0s;
+}
+
+.form-input:nth-of-type(2) {
+    animation-delay: 0.1s;
+}
+
+.form-input:nth-of-type(3) {
+    animation-delay: 0.2s;
+}
+
+/* ========== ANIMATIONS DE ROTATION ET FLIP ========== */
+
+@keyframes flipInX {
+    from {
+        opacity: 0;
+        transform: perspective(400px) rotateX(90deg);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(400px) rotateX(0deg);
+    }
+}
+
+.animate-flip-in {
+    animation: flipInX 0.8s ease-out forwards;
+}
+
+/* ========== ANIMATIONS DE ZOOMAGE ========== */
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes zoomOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+.animate-zoom-in {
+    animation: zoomIn 0.6s ease-out forwards;
+}
+
+.animate-zoom-out {
+    animation: zoomOut 0.6s ease-in forwards;
+}
+
+/* ========== ANIMATIONS DE SHAKE ========== */
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* ========== ANIMATIONS DE WIGGLE ========== */
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-3deg);
+    }
+    75% {
+        transform: rotate(3deg);
+    }
+}
+
+.animate-wiggle {
+    animation: wiggle 0.8s ease-in-out;
+}

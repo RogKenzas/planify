@@ -9,7 +9,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Content />} />
-        <Route path="/auth/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </>
   )

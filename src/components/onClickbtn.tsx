@@ -3,7 +3,7 @@ import './btn.css';
 export default function OnClickBtn({ label, icon, bgColor, color, onClick }: { label: string; icon: React.ReactNode; bgColor: string; color: string; onClick: () => void }) {
     return (
         <div
-            className="pill-action"
+            className="pill-action animate-fade-in-scale"
             onClick={onClick}
             style={{backgroundColor: bgColor, color: color}}
             role="button"

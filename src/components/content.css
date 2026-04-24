@@ -20,3 +20,60 @@
     gap: 20px;
     margin-top: 20px;
 }
+
+.data__scream {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 90vh;
+    background-color: aqua;
+    border-radius: 18px;
+    margin: 25px 25px 10px;
+    transition: all 0.3s ease;
+}
+
+.data__scream:hover {
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+/* Animations du titre et du contenu */
+.title {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.title h1 {
+    margin-bottom: 16px;
+    font-size: 48px;
+    line-height: 1.2;
+}
+
+.title p {
+    font-size: 16px;
+    color: #666;
+    max-width: 500px;
+}
+
+/* Animations des boutons */
+.sect__btn .pill-action:nth-child(1) {
+    animation: fadeInUp 0.8s ease-out 0.1s forwards;
+}
+
+.sect__btn .pill-action:nth-child(2) {
+    animation: fadeInUp 0.8s ease-out 0.2s forwards;
+}
+
+/* Effet de pulse au survol de la section de données */
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 0px rgba(0, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+    }
+}
+
+.data__scream.pulse {
+    animation: glow 3s ease-in-out infinite;
+}

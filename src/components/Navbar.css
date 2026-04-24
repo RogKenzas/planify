@@ -25,6 +25,12 @@
   text-decoration: none;
   color: inherit;
   min-width: 160px;
+  animation: fadeIn 0.8s ease-out forwards;
+  transition: all 0.3s ease;
+}
+
+.Navbar__brand:hover {
+  transform: translateY(-2px);
 }
 
 .Navbar__mark {
@@ -54,6 +60,14 @@
   color: #000;
   padding: 8px 6px;
   border-radius: 10px;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.Navbar__link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #000;
+  transform: translateY(-2px);
 }
 
 
@@ -77,6 +91,13 @@
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
+  transition: all 0.3s ease;
+  animation: fadeInScale 0.8s ease-out forwards;
+}
+
+.Navbar__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .Navbar__icon {
