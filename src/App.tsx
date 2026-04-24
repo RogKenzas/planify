@@ -1,11 +1,16 @@
-import { Content } from './components/content';
 import { Navbar } from './components/Navbar'
+import { Route, Routes } from 'react-router-dom'
+import { Content } from './components/content'
+import Login from './pages/login'
 
 function App() {
   return (
     <>
       <Navbar />
-      <Content />
+      <Routes>
+        <Route path="/" element={<Content />} />
+        <Route path="/auth/login" element={<Login />} />
+      </Routes>
     </>
   )
 }

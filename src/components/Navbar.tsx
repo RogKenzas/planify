@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './Navbar.css'
+import OnClickBtn from './onClickbtn'
+import { BiMenuAltRight } from 'react-icons/bi'
 
 type NavItem = {
   label: string
@@ -69,38 +72,30 @@ export function Navbar() {
   return (
     <header className="Navbar" role="banner">
       <div className="Navbar__inner">
-        <a className="Navbar__brand" href={nav.brand.href}>
+        <Link className="Navbar__brand" to={nav.brand.href}>
           {/* <span className="Navbar__mark" aria-hidden="true" /> */}
           <span className="Navbar__brandText">{nav.brand.label}</span>
-        </a>
+        </Link>
 
         <nav className="Navbar__nav" aria-label="Navigation principale">
           {nav.items.map((item) => (
-            <a key={item.href} className="Navbar__link" href={item.href}>
+            <Link key={item.href} className="Navbar__link" to={item.href}>
               {item.label}
-            </a>
+            </Link>
           ))}
           <span className="Navbar__link">|</span>
-          <a className="Navbar__cta" href={nav.cta.href}>
+          <Link className="Navbar__cta" to={nav.cta.href}>
             {nav.cta.label} <ArrowUpRightIcon />
-          </a>
+          </Link>
 
         </nav>
 
         <div className="Navbar__actions">
-
-          {/* <button className="Navbar__iconBtn" type="button" aria-label="Rechercher">
-            <SearchIcon />
-          </button> */}
-
-          <button className="Navbar__pillBtn" type="button" aria-label="Menu">
-            <span className="Navbar__pillLabel">Menu</span>
-            <span className="Navbar__burger" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-          </button>
+          <OnClickBtn color='#000'
+            label="Menu"
+            icon={<BiMenuAltRight size={18} />}
+            onClick={() => console.log("Go to login")} bgColor={''}
+          />
         </div>
       </div>
     </header>
