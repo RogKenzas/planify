@@ -1,7 +1,7 @@
 import '../styles/form.css';
 import screamVideo from '../assets/scream.mp4';
 import OnClickBtn from '../components/onClickbtn';
-import { ArrowRightIcon, ArrowUpRightIcon, BoxIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BoxIcon, ChevronRight } from 'lucide-react';
 import { GrGithub } from 'react-icons/gr';
 import { BsApple, BsEnvelope } from 'react-icons/bs';
 import Input from '../components/input';
