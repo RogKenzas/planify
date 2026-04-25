@@ -1,11 +1,26 @@
 import './btn.css';
 
-export default function OnClickBtn({ label, icon, bgColor, color, onClick }: { label: string; icon: React.ReactNode; bgColor: string; color: string; onClick: () => void }) {
+export default function OnClickBtn(
+    { 
+        label, 
+        icon, 
+        bgColor, 
+        color, 
+        onClick, 
+        width 
+    }: { 
+        label: string; 
+        icon: React.ReactNode; 
+        bgColor: string; 
+        color: string; 
+        onClick: () => void; 
+        width?: "full" | "auto" | "desktop"; 
+    }) {
     return (
         <div
-            className="pill-action animate-fade-in-scale"
+            className={`pill-action ${width} animate-fade-in-scale`}
             onClick={onClick}
-            style={{backgroundColor: bgColor, color: color}}
+            style={{backgroundColor: bgColor, color: color, width: width}}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {

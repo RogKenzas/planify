@@ -1,11 +1,17 @@
 import '../styles/form.css';
 import screamVideo from '../assets/scream.mp4';
 import OnClickBtn from '../components/onClickbtn';
-import { BoxIcon } from 'lucide-react';
+import { ArrowRightIcon, ArrowUpRightIcon, BoxIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GrGithub } from 'react-icons/gr';
-import { BsApple } from 'react-icons/bs';
+import { BsApple, BsEnvelope } from 'react-icons/bs';
+import Input from '../components/input';
+import { useState } from 'react';
 
 export default function Login() {
+
+    const [email, setEmail] = useState("");
+
+
     return (
         <div className="login_card animate-fade-in-up">
             <div className="left_side">
@@ -45,6 +51,21 @@ export default function Login() {
                             onClick={() => console.log("Go to login")} bgColor={'#000'}
                         />
                     </div>
+
+                    <Input 
+                        type="email" 
+                        placeholder="Enter your email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        icon={<BsEnvelope size={20} color='#b8b8b8'/>} 
+                    />
+
+                    <OnClickBtn color='#000'
+                        label="Continue with email"
+                        icon={<ChevronRight />}
+                        onClick={() => console.log("Go to login")} bgColor={'#fff'}
+                        width="desktop"
+                    />
                 </div>
 
                 <div className="register_master">
