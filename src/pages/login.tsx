@@ -69,7 +69,7 @@ export default function Login() {
                 </div>
 
                 <div className="register_master">
-                    <p>Don't have an account ? <a href="/register">Register</a></p>
+                    <p>Don't have an account ? <a href="/register">Create your account</a></p>
                 </div>
             </div>
         </div>
