@@ -6,7 +6,7 @@ import { useFadeInOnScroll } from '../hooks/useFadeInOnScroll';
 function ArrowUpRightIcon() {
     return (
         <svg
-            style={{color: '#000'}}
+            style={{ color: '#000' }}
             width="19"
             height="19"
             viewBox="0 0 24 24"
@@ -42,9 +42,10 @@ export function Content() {
                 </div>
 
                 <div className="data__scream scroll-animate-fade-up" ref={dataScreenRef}>
-                    <div className="ctn__data"></div>
+                    <div className="ctn__data">
+                    </div>
                 </div>
-                
+
             </div>
         </div>
     )

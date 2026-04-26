@@ -1,0 +1,115 @@
+.otp_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+    font-family: "Poppins", sans-serif;
+    transition: all 0.2s ease;
+}
+
+.otp_header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.back_btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.back_btn:hover {
+    background: #f5f5f5;
+}
+
+.otp_inputs {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.otp_inputs input {
+    width: 50px;
+    height: 55px;
+    text-align: center;
+    font-size: 20px;
+    border-radius: 10px;
+    border: 1.5px solid #ccc;
+    outline: none;
+    transition: 0.2s;
+    animation: popIn 0.3s ease;
+}
+
+.otp_inputs input:focus {
+    border-color: #000;
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.otp_inputs input:not(:placeholder-shown),
+.otp_inputs input:valid {
+    border-color: #000;
+}
+
+.otp_inputs.error {
+    animation: shake 0.3s;
+}
+
+.otp_inputs.error input {
+    border-color: #ff4d4f;
+    background: #fff1f0;
+    animation: shake 0.3s;
+}
+
+.otp_inputs.error input:focus {
+    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.2);
+}
+
+/* ✅ SUCCESS */
+.otp_inputs.success input {
+    border-color: #52c41a;
+    background: #f6ffed;
+}
+
+.otp_inputs.success input:focus {
+    box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.2);
+}
+
+.otp_inputs.success input {
+    animation: successPop 0.3s ease;
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
