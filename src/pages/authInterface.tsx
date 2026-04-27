@@ -1,7 +1,7 @@
     import '../styles/form.css';
     import screamVideo from '../assets/scream.mp4';
     import OnClickBtn from '../components/onClickbtn';
-    import { BoxIcon, ChevronRight } from 'lucide-react';
+    import { BoxIcon, ChevronRight, Fingerprint, User2Icon } from 'lucide-react';
     import { GrGithub } from 'react-icons/gr';
     import { BsApple, BsEnvelope } from 'react-icons/bs';
     import Input from '../components/input';
@@ -15,6 +15,7 @@
         const navigate = useNavigate();
         
         const [email, setEmail] = useState("");
+        const [password, setPassword] = useState("");
         const isRegister = location.pathname === "/register";
         const [step, setStep] = useState<"social" | "otp">("social")
 
@@ -106,11 +107,27 @@
                                 <p>Start planning your tasks today.</p>
 
                                 <Input
+                                    type="text"
+                                    placeholder=" Create a username"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    icon={<User2Icon size={20} color='#b8b8b8' />}
+                                />
+
+                                <Input
                                     type="email"
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    icon={<BsEnvelope size={20} />}
+                                    icon={<BsEnvelope size={20} color='#b8b8b8' />}
+                                />
+
+                                <Input
+                                    type="password"
+                                    placeholder="Create a password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    icon={<Fingerprint size={20} color='#b8b8b8' />}
                                 />
 
                                 <OnClickBtn
