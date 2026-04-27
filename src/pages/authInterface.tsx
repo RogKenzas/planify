@@ -5,7 +5,7 @@
     import { GrGithub } from 'react-icons/gr';
     import { BsApple, BsEnvelope } from 'react-icons/bs';
     import Input from '../components/input';
-    import { useEffect, useState } from 'react';
+    import { useState } from 'react';
     import OtpStep from '../components/otpStep';
     import { useNavigate, useLocation } from "react-router-dom";
 

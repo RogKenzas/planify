@@ -1,4 +1,3 @@
-import { TimerIcon } from 'lucide-react';
 import './leftSideBar.css';
 
 type Props = {
