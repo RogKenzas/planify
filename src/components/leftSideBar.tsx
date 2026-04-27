@@ -1,3 +1,4 @@
+import { TimerIcon } from 'lucide-react';
 import './leftSideBar.css';
 
 type Props = {
@@ -8,13 +9,13 @@ type Props = {
 export default function LeftSideBar({ open, onClose }: Props) {
     return (
         <>
-            {/* overlay */}
             <div
                 className={`sidebar_overlay ${open ? "show" : ""}`}
                 onClick={onClose}
             />
 
-            {/* sidebar */}
+            
+
             <div className={`left_sidebar ${open ? "open" : ""}`}>
                 <h2>Menu</h2>
 

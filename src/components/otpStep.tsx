@@ -12,6 +12,27 @@ export default function OtpStep({ email, onBack }: Props) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [timer, setTimer] = useState(0);
+
+    const handleResend = async () => {
+        if (timer > 0) return;
+
+        setTimer(10);
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        console.log("OTP resent");
+    };
+
+    useEffect(() => {
+        if (timer <= 0) return;
+
+        const interval = setInterval(() => {
+            setTimer((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [timer]);
 
     const resetOtp = () => {
         setOtp(["", "", "", "", "", ""]);
@@ -100,6 +121,19 @@ export default function OtpStep({ email, onBack }: Props) {
                         onKeyDown={(e) => handleKeyDown(e, i)}
                     />
                 ))}
+            </div>
+
+            <div className="not_received">
+                {timer > 0 ? (
+                    <span>Resend available in {timer}s</span>
+                ) : (
+                    <span>
+                        Not received?{" "}
+                        <button className="resend_btn" onClick={handleResend}>
+                            Click here to resend
+                        </button>
+                    </span>
+                )}
             </div>
 
             <OnClickBtn

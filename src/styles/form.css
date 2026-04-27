@@ -62,6 +62,16 @@
     width: 100%;
 }
 
+.link_like {
+    color: #000;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.link_like:hover {
+    opacity: 0.7;
+}
+
 @media (max-width: 768px) {
     .login_card {
         flex-direction: column;

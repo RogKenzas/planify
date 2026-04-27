@@ -86,6 +86,29 @@
     animation: successPop 0.3s ease;
 }
 
+.not_received {
+    font-size: 13px;
+    color: #666;
+}
+
+.resend_btn {
+    background: none;
+    border: none;
+    color: #000;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.resend_btn:hover {
+    opacity: 0.7;
+}
+
+.resend_btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 @keyframes successPop {
     0% {
         transform: scale(0.95);

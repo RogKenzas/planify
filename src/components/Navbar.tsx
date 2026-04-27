@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import './Navbar.css'
 import OnClickBtn from './onClickbtn'
 import { BiMenuAltRight } from 'react-icons/bi'
-import LeftSideBar from './leftSideBar'
 
 type NavItem = {
   label: string
@@ -16,7 +15,9 @@ type NavResponse = {
   cta: { label: string; href: string }
 }
 
-
+type Props = {
+  onOpen: () => void;
+}
 
 function ArrowUpRightIcon() {
   return (
@@ -35,8 +36,7 @@ function ArrowUpRightIcon() {
   )
 }
 
-export function Navbar() {
-  const [open, setOpen] = useState(false);
+export function Navbar({ onOpen }: Props) {
   const fallback = useMemo<NavResponse>(
     () => ({
       brand: { label: 'Planify', href: '/' },
@@ -63,8 +63,7 @@ export function Navbar() {
       .then((data) => {
         if (!cancelled) setNav(data)
       })
-      .catch(() => {
-      })
+      .catch(() => {})
 
     return () => {
       cancelled = true
@@ -72,37 +71,36 @@ export function Navbar() {
   }, [fallback])
 
   return (
-    <>
-      <header className="Navbar animate-fade-in" role="banner">
-        <div className="Navbar__inner">
-          <Link className="Navbar__brand" to={nav.brand.href}>
-            <span className="Navbar__brandText">{nav.brand.label}</span>
-          </Link>
+    <header className="Navbar animate-fade-in" role="banner">
+      <div className="Navbar__inner">
+        
+        <Link className="Navbar__brand" to={nav.brand.href}>
+          <span className="Navbar__brandText">{nav.brand.label}</span>
+        </Link>
 
-          <nav className="Navbar__nav" aria-label="Navigation principale">
-            {nav.items.map((item) => (
-              <Link key={item.href} className="Navbar__link" to={item.href}>
-                {item.label}
-              </Link>
-            ))}
-            <span className="Navbar__link">|</span>
-            <Link className="Navbar__cta" to={nav.cta.href}>
-              {nav.cta.label} <ArrowUpRightIcon />
+        <nav className="Navbar__nav" aria-label="Navigation principale">
+          {nav.items.map((item) => (
+            <Link key={item.href} className="Navbar__link" to={item.href}>
+              {item.label}
             </Link>
+          ))}
+          <span className="Navbar__link">|</span>
+          <Link className="Navbar__cta" to={nav.cta.href}>
+            {nav.cta.label} <ArrowUpRightIcon />
+          </Link>
+        </nav>
 
-          </nav>
-
-          <div className="Navbar__actions">
-            <OnClickBtn color='#000'
-              label="Menu"
-              icon={<BiMenuAltRight size={18} />}
-              onClick={() => setOpen(true)} bgColor={''}
-            />
-          </div>
+        <div className="Navbar__actions">
+          <OnClickBtn
+            color="#000"
+            label="Menu"
+            icon={<BiMenuAltRight size={18} />}
+            onClick={onOpen}
+            bgColor=""
+          />
         </div>
-      <LeftSideBar open={open} onClose={() => setOpen(false)} />
-      </header>
-    </>
+
+      </div>
+    </header>
   )
 }
-
