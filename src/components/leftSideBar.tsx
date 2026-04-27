@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import './leftSideBar.css';
+import { X } from 'lucide-react';
 
 type Props = {
     open: boolean;
@@ -6,6 +8,16 @@ type Props = {
 };
 
 export default function LeftSideBar({ open, onClose }: Props) {
+
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+
+        window.addEventListener("keydown", handleKey);
+        return () => window.removeEventListener("keydown", handleKey);
+    }, [onClose]);
+
     return (
         <>
             <div
@@ -13,9 +25,12 @@ export default function LeftSideBar({ open, onClose }: Props) {
                 onClick={onClose}
             />
 
-            
-
             <div className={`left_sidebar ${open ? "open" : ""}`}>
+
+                <button className="close_btn" onClick={onClose}>
+                    <X size={18} />
+                </button>
+
                 <h2>Menu</h2>
 
                 <nav className="sidebar_nav">
