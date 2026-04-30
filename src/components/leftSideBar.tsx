@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import './leftSideBar.css';
-import { X } from 'lucide-react';
+import { LayoutDashboard, LogOut, Settings, User, X } from 'lucide-react';
+import SidebarItem from './SidebarItem';
 
 type Props = {
     open: boolean;
@@ -34,10 +35,10 @@ export default function LeftSideBar({ open, onClose }: Props) {
                 <h2>Menu</h2>
 
                 <nav className="sidebar_nav">
-                    <a href="#">Dashboard</a>
-                    <a href="#">Profile</a>
-                    <a href="#">Settings</a>
-                    <a href="#">Logout</a>
+                    <SidebarItem href='/dashboard' icon={<LayoutDashboard size={18} />} label="Dashboard" />
+                    <SidebarItem icon={<User size={18} />} label="Profile" />
+                    <SidebarItem icon={<Settings size={18} />} label="Settings" />
+                    <SidebarItem icon={<LogOut size={18} />} label="Logout" />
                 </nav>
             </div>
         </>

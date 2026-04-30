@@ -1,0 +1,421 @@
+.dashboard {
+  --bg: #f4f4f6;
+  --card: #ffffff;
+  --ink: #191919;
+  --muted: #666b76;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: 260px minmax(560px, 1fr) 260px;
+  gap: 16px;
+  padding: 14px;
+}
+
+.panel,
+.dashboard__main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0 4px;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid #ececf0;
+  box-shadow: 0 6px 16px rgba(18, 20, 31, 0.03);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(18, 20, 31, 0.09);
+}
+
+.card--dark {
+  background: #1f2024;
+  color: #f6f7fb;
+  border-color: #1f2024;
+}
+
+.card--list {
+  padding-top: 12px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.card__header h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.icon-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-size: 16px;
+  opacity: 0.85;
+  transition: transform 0.15s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tone-green {
+  background: #d2f0da;
+}
+
+.tone-yellow {
+  background: #f6f0b9;
+}
+
+.money {
+  margin-top: 4px;
+  font-size: 39px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.money--xl {
+  font-size: 42px;
+}
+
+.month {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card--dark .month {
+  color: #d2d4db;
+}
+
+.people-list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.person {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.person__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.person__meta strong {
+  font-size: 14px;
+}
+
+.person__meta span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.person small {
+  font-size: 13px;
+  color: #444950;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1f2f48;
+  color: #fff;
+  font-size: 13px;
+}
+
+.avatar--muted {
+  background: #3b3d43;
+}
+
+.pill-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.pill {
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 74px;
+  transition: transform 0.2s ease;
+}
+
+.pill:hover {
+  transform: translateY(-2px);
+}
+
+.pill strong {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.pill span {
+  font-size: 13px;
+}
+
+.tone-blue {
+  background: #b9d4f3;
+}
+
+.tone-lavender {
+  background: #d4cdf3;
+}
+
+.tone-red {
+  background: #f2c7c7;
+}
+
+.tone-orange {
+  background: #f1cfaa;
+}
+
+.role-chart {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  align-items: end;
+  gap: 8px;
+  min-height: 130px;
+  padding: 4px 0;
+}
+
+.role-bar {
+  border: 0;
+  background: #ececef;
+  border-radius: 8px;
+  height: 98px;
+  display: flex;
+  align-items: end;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.role-bar span {
+  display: block;
+  width: 100%;
+  border-radius: 6px;
+  background: #222327;
+  animation: grow-bar 0.7s ease both;
+}
+
+.role-tooltip {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: 46px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #ececf0;
+  box-shadow: 0 10px 20px rgba(28, 30, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.benefits,
+.budget-list {
+  margin-top: 10px;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.benefits li,
+.budget-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.gender-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.gender-row strong {
+  font-size: 26px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 18, 0.45);
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.18s ease both;
+}
+
+.modal__card {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 92vw);
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #ececf0;
+  padding: 18px;
+  box-shadow: 0 18px 44px rgba(20, 25, 33, 0.2);
+  animation: pop-in 0.2s ease both;
+}
+
+.modal__card p {
+  margin-top: 8px;
+  color: #3e4450;
+}
+
+.modal--closing .modal__backdrop {
+  animation: fade-out 0.18s ease both;
+}
+
+.modal__card--closing {
+  animation: pop-out 0.18s ease both;
+}
+
+.card-fade {
+  animation: rise-fade 0.5s ease both;
+}
+
+.delay-1 {
+  animation-delay: 0.08s;
+}
+
+.delay-2 {
+  animation-delay: 0.14s;
+}
+
+.delay-3 {
+  animation-delay: 0.2s;
+}
+
+.delay-4 {
+  animation-delay: 0.26s;
+}
+
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes grow-bar {
+  from {
+    height: 0%;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+}
+
+@media (max-width: 1180px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .pill-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
