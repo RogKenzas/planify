@@ -1,20 +1,35 @@
-import './sidebarItem.css';
-import type { ReactNode } from 'react';
+import { NavLink } from 'react-router-dom'
+import './sidebarItem.css'
+import type { ReactNode } from 'react'
 
 type Props = {
-    icon: ReactNode;
-    label: string;
-    href?: string;
-    onClick?: () => void;
-};
+    icon: ReactNode
+    label: string
+    href?: string
+    onClick?: () => void
+}
 
-export default function SidebarItem({ icon, label, href = "#", onClick }: Props) {
-    return (
-        <a href={href} className="sidebar_item" onClick={onClick}>
+export default function SidebarItem({ icon, label, href, onClick }: Props) {
+    const content = (
+        <>
             <div className="icon_wrapper">
                 {icon}
             </div>
             <span className="label">{label}</span>
-        </a>
-    );
+        </>
+    )
+
+    if (!href) {
+        return (
+            <button type="button" className="sidebar_item" onClick={onClick}>
+                {content}
+            </button>
+        )
+    }
+
+    return (
+        <NavLink to={href} className="sidebar_item" onClick={onClick}>
+            {content}
+        </NavLink>
+    )
 }

@@ -1,160 +1,217 @@
-    import '../styles/form.css';
-    import screamVideo from '../assets/scream.mp4';
-    import OnClickBtn from '../components/onClickbtn';
-    import { BoxIcon, ChevronRight, Fingerprint, User2Icon } from 'lucide-react';
-    import { GrGithub } from 'react-icons/gr';
-    import { BsApple, BsEnvelope } from 'react-icons/bs';
-    import Input from '../components/input';
-    import { useState } from 'react';
-    import OtpStep from '../components/otpStep';
-    import { useNavigate, useLocation } from "react-router-dom";
+import '../styles/form.css';
+import screamVideo from '../assets/scream.mp4';
+import OnClickBtn from '../components/onClickbtn';
+import { Fingerprint, User2Icon } from 'lucide-react';
+import { BsEnvelope } from 'react-icons/bs';
+import Input from '../components/input';
+import { useState } from 'react';
+import { useNavigate, useLocation } from "react-router-dom";
+import { checkAvailability, loginUser, registerUser, sessionStorage } from '../api/auth';
 
-    export default function AuthInterface() {
+type FormErrors = {
+    identifier?: string;
+    username?: string;
+    email?: string;
+    password?: string;
+    global?: string;
+}
 
-        const location = useLocation();
-        const navigate = useNavigate();
-        
-        const [email, setEmail] = useState("");
-        const [password, setPassword] = useState("");
-        const isRegister = location.pathname === "/register";
-        const [step, setStep] = useState<"social" | "otp">("social")
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.-]{3,30}$/;
 
-        return (
-            <div className="login_card animate-fade-in-up">
-                <div className="left_side">
-                    <video
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover"
-                        }}
-                    >
-                        <source src={screamVideo} type="video/mp4" />
-                    </video>
-                </div>
-                <div className="right_side">
-                    <div className="nat_form">
-                        {!isRegister && step === "social" && (
-                            <>
+export default function AuthInterface() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const isRegister = location.pathname === "/register";
 
-                                <h1>Sign In to Planify</h1>
-                                <p>Stay connected to your planning to handle your tasks efficiently.</p>
+    const [identifier, setIdentifier] = useState("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState<FormErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-                                <div className="sect_btn">
-                                    <OnClickBtn color='#fff'
-                                        label="Chart"
-                                        icon={<BoxIcon size={18} />}
-                                        onClick={() => console.log("Go to login")} bgColor={'#000'}
-                                    />
-                                    <OnClickBtn color='#fff'
-                                        label="Github"
-                                        icon={<GrGithub size={18} />}
-                                        onClick={() => console.log("Go to login")} bgColor={'#000'}
-                                    />
-                                    <OnClickBtn color='#fff'
-                                        label="Apple"
-                                        icon={<BsApple size={18} />}
-                                        onClick={() => console.log("Go to login")} bgColor={'#000'}
-                                    />
-                                </div>
+    const handleLogin = async () => {
+        const nextErrors: FormErrors = {};
+        if (!identifier.trim()) nextErrors.identifier = "Email ou username requis.";
+        if (!password) nextErrors.password = "Mot de passe requis.";
+        if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors);
+            return;
+        }
 
-                                <Input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    icon={<BsEnvelope size={20} color='#b8b8b8' />}
-                                />
+        try {
+            setIsSubmitting(true);
+            setErrors({});
+            const data = await loginUser({ identifier: identifier.trim(), password });
+            if (!data.token) throw new Error("Session non créée.");
+            sessionStorage.setToken(data.token);
+            navigate("/dashboard");
+        } catch (error) {
+            setErrors({ global: error instanceof Error ? error.message : "Erreur de connexion." });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-                                <OnClickBtn color='#000'
-                                    label="Continue with email"
-                                    icon={<ChevronRight />}
-                                    onClick={() => setStep("otp")} bgColor={'#fff'}
-                                    width="desktop"
-                                />
+    const handleRegister = async () => {
+        const nextErrors: FormErrors = {};
+        const cleanedUsername = username.trim();
+        const cleanedEmail = email.trim().toLowerCase();
 
+        if (!cleanedUsername) nextErrors.username = "Username requis.";
+        else if (!USERNAME_REGEX.test(cleanedUsername)) {
+            nextErrors.username = "3-30 caractères (lettres/chiffres/._-).";
+        }
 
-                                <div className="register_master">
-                                    <p>
-                                        Don't have an account ?{" "}
-                                        <span
-                                            className="link_like"
-                                            onClick={() => {
-                                                setStep("social");
-                                                navigate("/register");
-                                            }}
-                                        >
-                                            Create your account
-                                        </span>
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                        {!isRegister && step === "otp" && (
-                            <OtpStep
-                                email={email}
-                                onBack={() => setStep("social")}
+        if (!cleanedEmail) nextErrors.email = "Email requis.";
+        else if (!EMAIL_REGEX.test(cleanedEmail)) nextErrors.email = "Format email invalide.";
+
+        if (!password) nextErrors.password = "Mot de passe requis.";
+        else if (password.length < 6) nextErrors.password = "Minimum 6 caractères.";
+
+        if (Object.keys(nextErrors).length > 0) {
+            setErrors(nextErrors);
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            setErrors({});
+
+            const availability = await checkAvailability({ email: cleanedEmail, username: cleanedUsername });
+            if (availability.email.exists || availability.username.exists) {
+                setErrors({
+                    email: availability.email.exists ? "Cet email existe déjà." : undefined,
+                    username: availability.username.exists ? "Ce username existe déjà." : undefined,
+                });
+                return;
+            }
+
+            const data = await registerUser({ username: cleanedUsername, email: cleanedEmail, password });
+            if (!data.token) throw new Error("Session non créée.");
+            sessionStorage.setToken(data.token);
+            navigate("/dashboard");
+        } catch (error) {
+            setErrors({ global: error instanceof Error ? error.message : "Erreur d'inscription." });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="login_card animate-fade-in-up">
+            <div className="left_side">
+                <video autoPlay loop muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }}>
+                    <source src={screamVideo} type="video/mp4" />
+                </video>
+            </div>
+            <div className="right_side">
+                <div className="nat_form">
+                    {!isRegister && (
+                        <>
+                            <h1>Sign In to Planify</h1>
+                            <p>Connecte-toi pour gérer ton planning.</p>
+
+                            <Input
+                                type="text"
+                                placeholder="Email ou username"
+                                value={identifier}
+                                onChange={(e) => setIdentifier(e.target.value)}
+                                icon={<BsEnvelope size={20} color='#b8b8b8' />}
+                                error={errors.identifier}
                             />
-                        )}
 
-                        {isRegister && (
-                            <>
-                                <h1>Create an account</h1>
-                                <p>Start planning your tasks today.</p>
+                            <Input
+                                type="password"
+                                placeholder="Mot de passe"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                icon={<Fingerprint size={20} color='#b8b8b8' />}
+                                error={errors.password}
+                            />
 
-                                <Input
-                                    type="text"
-                                    placeholder=" Create a username"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    icon={<User2Icon size={20} color='#b8b8b8' />}
-                                />
+                            {errors.global && <p className="form_error">{errors.global}</p>}
 
-                                <Input
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    icon={<BsEnvelope size={20} color='#b8b8b8' />}
-                                />
+                            <OnClickBtn
+                                color='#fff'
+                                label={isSubmitting ? "Connexion..." : "Se connecter"}
+                                icon=""
+                                onClick={() => {
+                                    if (!isSubmitting) handleLogin();
+                                }}
+                                bgColor={'#000'}
+                                width="desktop"
+                            />
 
-                                <Input
-                                    type="password"
-                                    placeholder="Create a password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    icon={<Fingerprint size={20} color='#b8b8b8' />}
-                                />
+                            <div className="register_master">
+                                <p>
+                                    Pas de compte ?{" "}
+                                    <span className="link_like" onClick={() => navigate("/register")}>
+                                        Créer un compte
+                                    </span>
+                                </p>
+                            </div>
+                        </>
+                    )}
 
-                                <OnClickBtn
-                                    label="Continue"
-                                    onClick={() => console.log("register flow")}
-                                    bgColor="#000"
-                                    color="#fff"
-                                    width="desktop" icon="" />
+                    {isRegister && (
+                        <>
+                            <h1>Create an account</h1>
+                            <p>Crée ton compte et démarre rapidement.</p>
 
-                                <div className="register_master">
-                                    <p>
-                                        Already have an account ?{" "}
-                                        <span
-                                            className="link_like"
-                                            onClick={() => {
-                                                setStep("social");
-                                                navigate("/login");
-                                            }}
-                                        >
-                                            Sign in
-                                        </span>
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </div>
+                            <Input
+                                type="text"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                icon={<User2Icon size={20} color='#b8b8b8' />}
+                                error={errors.username}
+                            />
+
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                icon={<BsEnvelope size={20} color='#b8b8b8' />}
+                                error={errors.email}
+                            />
+
+                            <Input
+                                type="password"
+                                placeholder="Mot de passe"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                icon={<Fingerprint size={20} color='#b8b8b8' />}
+                                error={errors.password}
+                            />
+
+                            {errors.global && <p className="form_error">{errors.global}</p>}
+
+                            <OnClickBtn
+                                label={isSubmitting ? "Création..." : "Créer mon compte"}
+                                onClick={() => {
+                                    if (!isSubmitting) handleRegister();
+                                }}
+                                bgColor="#000"
+                                color="#fff"
+                                width="desktop"
+                                icon=""
+                            />
+
+                            <div className="register_master">
+                                <p>
+                                    Déjà un compte ?{" "}
+                                    <span className="link_like" onClick={() => navigate("/login")}>
+                                        Se connecter
+                                    </span>
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
+}

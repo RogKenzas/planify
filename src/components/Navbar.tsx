@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import './Navbar.css'
 import OnClickBtn from './onClickbtn'
 import { BiMenuAltRight } from 'react-icons/bi'
+import { useAuthSession } from '../context/authSession'
 
 type NavItem = {
   label: string
@@ -51,6 +52,8 @@ export function Navbar({ onOpen }: Props) {
   )
 
   const [nav, setNav] = useState<NavResponse>(fallback)
+  const { user, requestLogout } = useAuthSession()
+  const isAuthenticated = Boolean(user)
 
   useEffect(() => {
     let cancelled = false
@@ -85,9 +88,20 @@ export function Navbar({ onOpen }: Props) {
             </Link>
           ))}
           <span className="Navbar__link">|</span>
-          <Link className="Navbar__cta" to={nav.cta.href}>
-            {nav.cta.label} <ArrowUpRightIcon />
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link className="Navbar__cta" to="/dashboard">
+                Dashboard <ArrowUpRightIcon />
+              </Link>
+              <button type="button" className="Navbar__cta" onClick={requestLogout}>
+                Logout <ArrowUpRightIcon />
+              </button>
+            </>
+          ) : (
+            <Link className="Navbar__cta" to={nav.cta.href}>
+              {nav.cta.label} <ArrowUpRightIcon />
+            </Link>
+          )}
         </nav>
 
         <div className="Navbar__actions">

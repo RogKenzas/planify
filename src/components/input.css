@@ -1,16 +1,29 @@
+.input_wrapper {
+    width: 80%;
+}
+
 .input_group {
     display: flex;
     align-items: center;
-    width: 80%;
+    width: 100%;
     padding: 3px 12px;
     border: 1.5px solid #b8b6b6;
     border-radius: 50px;
-    transition: border 0.3s ease;
+    transition: border 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
     background-color: #fff;
 }
 
 .input_group:focus-within {
     border: 1.5px solid #000;
+}
+
+.input_group--error {
+    border: 1.5px solid #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+}
+
+.input_group--shake {
+    animation: inputShake 0.36s ease;
 }
 
 .input_group input {
@@ -21,15 +34,41 @@
     font-family: "Poppins", sans-serif;
     font-size: 14px;
     background: transparent;
+    transition: color 0.2s ease;
 }
 
 .input_group input::placeholder {
     color: #b8b6b6;
+    transition: color 0.2s ease;
+}
+
+.input_group input.input_field--error::placeholder {
+    color: #dc2626;
+}
+
+.input_error {
+    margin-top: 6px;
+    margin-left: 10px;
+    color: #dc2626;
+    font-size: 12px;
+    text-align: left;
+}
+
+@keyframes inputShake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+    100% { transform: translateX(0); }
 }
 
 @media (max-width: 768px) {
-    .input_group {
+    .input_wrapper {
         width: 100%;
+    }
+
+    .input_group {
         padding: 8px 12px;
         border-radius: 30px;
     }
