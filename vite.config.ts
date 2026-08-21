@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "https://backend-planify-jsk6.onrender.com",
+      "/api": "http://localhost:10000",
     },
   },
 })
