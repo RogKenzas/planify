@@ -35,8 +35,7 @@ export const sessionStorage = {
 };
 
 export const registerUser = async (payload: { username: string; email: string; password: string }) => {
-  // const res = await fetch("/api/auth/register", {
-  const res = await fetch("https://backend-planify-jsk6.onrender.com/api/auth/register", {
+  const res = await fetch("/api/auth/register", {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(payload),
@@ -45,8 +44,7 @@ export const registerUser = async (payload: { username: string; email: string; p
 };
 
 export const loginUser = async (payload: { identifier: string; password: string }) => {
-  // const res = await fetch("/api/auth/login", {
-  const res = await fetch("https://backend-planify-jsk6.onrender.com/api/auth/login", {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(payload),
@@ -58,8 +56,7 @@ export const getCurrentSession = async () => {
   const token = sessionStorage.getToken();
   if (!token) return null;
 
-  // const res = await fetch("/api/auth/session", {
-  const res = await fetch("https://backend-planify-jsk6.onrender.com/api/auth/session", {
+  const res = await fetch("/api/auth/session", {
     headers: getHeaders(token),
   });
 
@@ -75,7 +72,7 @@ export const getCurrentSession = async () => {
 export const logoutUser = async () => {
   const token = sessionStorage.getToken();
   if (!token) return;
-  await fetch("https://backend-planify-jsk6.onrender.com/api/auth/logout", {
+  await fetch("/api/auth/logout", {
     method: "POST",
     headers: getHeaders(token),
   });
@@ -86,7 +83,7 @@ export const checkAvailability = async (payload: { email?: string; username?: st
   const query = new URLSearchParams();
   if (payload.email) query.set("email", payload.email);
   if (payload.username) query.set("username", payload.username);
-  const res = await fetch(`https://backend-planify-jsk6.onrender.com/api/auth/availability?${query.toString()}`);
+  const res = await fetch(`/api/auth/availability?${query.toString()}`);
   const data = await parseAuthResponse(res);
   return data as {
     ok: boolean;
