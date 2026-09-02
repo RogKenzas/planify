@@ -64,14 +64,9 @@ export default function DashboardInterface() {
 
     useEffect(() => {
         const loadPlanningData = async () => {
-            try {
-                const [teacherList, courseList] = await Promise.all([getTeachers(), getCourses()])
-                setTeachers(teacherList)
-                setCourses(courseList)
-            } catch {
-                setTeachers([])
-                setCourses([])
-            }
+            const [teacherResult, courseResult] = await Promise.allSettled([getTeachers(), getCourses()])
+            setTeachers(teacherResult.status === 'fulfilled' ? teacherResult.value : [])
+            setCourses(courseResult.status === 'fulfilled' ? courseResult.value : [])
         }
 
         void loadPlanningData()
@@ -209,12 +204,6 @@ export default function DashboardInterface() {
                             </article>
                         ))}
                     </div>
-
-                    <article className="highlight-card dark">
-                        <p className="card-sub">Budget pédagogique du mois</p>
-                        <h3>4,120,000 Ar</h3>
-                        <p className="card-sub">Manuels, transport, labo et activités</p>
-                    </article>
                 </aside>
 
                 <main className="dashboard-col dashboard-center fade-in-up">

@@ -15,7 +15,6 @@
 }
 
 .soft-card,
-.highlight-card,
 .kpi-card,
 .timetable-card {
   border-radius: 14px;
@@ -84,15 +83,6 @@ h3 {
 .priority-dot.danger { background: #ef4444; }
 .priority-dot.warning { background: #f59e0b; }
 .priority-dot.ok { background: #10b981; }
-
-.highlight-card.dark {
-  background: #171923;
-  color: #e2e8f0;
-}
-
-.highlight-card.dark .card-sub {
-  color: #cbd5e1;
-}
 
 .dashboard-head {
   display: flex;

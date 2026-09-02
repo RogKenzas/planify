@@ -14,6 +14,8 @@ export type Course = {
   color: 'blue' | 'green' | 'purple' | 'yellow'
 }
 
+const API_BASE = 'https://backend-planify-jsk6.onrender.com'
+
 const parseJson = async <T>(res: Response) => {
   const data = await res.json()
   if (!res.ok) {
@@ -22,13 +24,20 @@ const parseJson = async <T>(res: Response) => {
   return data as T
 }
 
+const asArray = <T>(data: T[] | { value?: T[] } | null | undefined): T[] => {
+  if (Array.isArray(data)) return data
+  if (data && Array.isArray(data.value)) return data.value
+  return []
+}
+
 export const getTeachers = async () => {
-  const res = await fetch('/api/teachers')
-  return parseJson<Teacher[]>(res)
+  const res = await fetch(`${API_BASE}/api/teachers`)
+  const data = await parseJson<Teacher[] | { value?: Teacher[] }>(res)
+  return asArray(data)
 }
 
 export const createTeacher = async (payload: { name: string; subject: string }) => {
-  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/teachers', {
+  const res = await fetch(`${API_BASE}/api/teachers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -37,12 +46,13 @@ export const createTeacher = async (payload: { name: string; subject: string }) 
 }
 
 export const getCourses = async () => {
-  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/schedule/data')
-  return parseJson<Course[]>(res)
+  const res = await fetch(`${API_BASE}/api/schedule/data`)
+  const data = await parseJson<Course[] | { value?: Course[] }>(res)
+  return asArray(data)
 }
 
 export const createCourse = async (payload: Omit<Course, 'id'>) => {
-  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/schedule/post', {
+  const res = await fetch(`${API_BASE}/api/schedule/post`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -51,7 +61,7 @@ export const createCourse = async (payload: Omit<Course, 'id'>) => {
 }
 
 export const updateCourse = async (id: string, payload: Omit<Course, 'id'>) => {
-  const res = await fetch(`https://backend-planify-jsk6.onrender.com/api/schedule/${id}`, {
+  const res = await fetch(`${API_BASE}/api/schedule/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
