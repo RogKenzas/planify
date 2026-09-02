@@ -28,7 +28,7 @@ export const getTeachers = async () => {
 }
 
 export const createTeacher = async (payload: { name: string; subject: string }) => {
-  const res = await fetch('/api/teachers', {
+  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/teachers', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -37,12 +37,12 @@ export const createTeacher = async (payload: { name: string; subject: string }) 
 }
 
 export const getCourses = async () => {
-  const res = await fetch('/api/schedule/data')
+  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/schedule/data')
   return parseJson<Course[]>(res)
 }
 
 export const createCourse = async (payload: Omit<Course, 'id'>) => {
-  const res = await fetch('/api/schedule/post', {
+  const res = await fetch('https://backend-planify-jsk6.onrender.com/api/schedule/post', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -51,7 +51,7 @@ export const createCourse = async (payload: Omit<Course, 'id'>) => {
 }
 
 export const updateCourse = async (id: string, payload: Omit<Course, 'id'>) => {
-  const res = await fetch(`/api/schedule/${id}`, {
+  const res = await fetch(`https://backend-planify-jsk6.onrender.com/api/schedule/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
