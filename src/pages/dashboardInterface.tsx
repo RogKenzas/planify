@@ -3,6 +3,7 @@ import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, typ
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
 import './dashboardInterface.css'
+import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 
 type Reminder = {
     id: string
@@ -39,6 +40,12 @@ export default function DashboardInterface() {
     const [showTeacherModal, setShowTeacherModal] = useState(false)
     const [showCourseModal, setShowCourseModal] = useState(false)
     const [draggedCourseId, setDraggedCourseId] = useState<string | null>(null)
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
+    const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+
+    const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
+    const [isDeletingCourse, setIsDeletingCourse] = useState(false);
 
     const [reminders] = useState<Reminder[]>([
         { id: 'r1', title: 'Réunion parents/professeurs', due: 'Aujourd’hui - 16:30', priority: 'haute' },
@@ -182,6 +189,153 @@ export default function DashboardInterface() {
         }
     }
 
+    const handleDeleteCourse = (course: Course) => {
+        setCourseToDelete(course);
+        setOpenMenuId(null);
+    };
+
+    const confirmDeleteCourse = async () => {
+        if (!courseToDelete) return;
+
+        setIsDeletingCourse(true);
+        setFormError('');
+
+        try {
+            const courseId = courseToDelete.id;
+
+            const url =
+                `https://backend-planify-jsk6.onrender.com/api/courses/${courseId}`;
+
+            console.log("COURSE COMPLET :", courseToDelete);
+            console.log("ID À SUPPRIMER :", courseId);
+            console.log("URL DELETE :", url);
+
+            const response = await fetch(url, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            console.log("STATUS DELETE :", response.status);
+
+            const responseText = await response.text();
+
+            console.log("RÉPONSE BACKEND :", responseText);
+
+            if (!response.ok) {
+                throw new Error(
+                    `Erreur ${response.status} : ${responseText}`
+                );
+            }
+
+            setCourses((prev) =>
+                prev.filter((course) => course.id !== courseId)
+            );
+
+            setSchedule((prev) =>
+                prev.filter((entry) => entry.courseId !== courseId)
+            );
+
+            setCourseToDelete(null);
+
+        } catch (error) {
+            console.error("ERREUR DELETE :", error);
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : "Impossible de supprimer le cours."
+            );
+        } finally {
+            setIsDeletingCourse(false);
+        }
+    };
+
+    const handleEditCourse = (course: Course) => {
+        // On mémorise exactement le cours sélectionné
+        setCourseToEdit(course);
+
+        // On remplit le formulaire avec ses données actuelles
+        setCourseForm({
+            title: course.title,
+            room: course.room,
+            duration: course.duration,
+            teacherId: course.teacherId,
+            color: course.color,
+        });
+
+        setFormError('');
+        setOpenMenuId(null);
+    };
+
+    const submitEditCourse = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!courseToEdit) {
+            return;
+        }
+
+        if (
+            !courseForm.title ||
+            !courseForm.room ||
+            !courseForm.teacherId
+        ) {
+            setFormError("Veuillez remplir tous les champs obligatoires.");
+            return;
+        }
+
+        setFormError('');
+        setIsUpdatingCourse(true);
+
+        try {
+            // IMPORTANT :
+            // voici l'ID exact du cours sélectionné
+            const courseId = courseToEdit.id;
+
+            console.log("Modification du cours ID :", courseId);
+
+            const updatedCourse = await updateCourse(
+                courseId,
+                courseForm
+            );
+
+            // Mise à jour du cours dans l'interface
+            setCourses((previousCourses) =>
+                previousCourses.map((course) =>
+                    course.id === updatedCourse.id
+                        ? updatedCourse
+                        : course
+                )
+            );
+
+            // Fermer la modale
+            setCourseToEdit(null);
+
+            // Nettoyer le formulaire
+            setCourseForm({
+                title: '',
+                room: '',
+                duration: '2h',
+                teacherId: '',
+                color: 'blue',
+            });
+
+        } catch (error) {
+
+            console.error("Erreur modification :", error);
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : "Impossible de modifier le cours."
+            );
+
+        } finally {
+            setIsUpdatingCourse(false);
+        }
+    };
+
     return (
         <div className="dashboard-interface-page">
             <TopSideBar onMenuClick={() => setIsMenuOpen(true)} />
@@ -296,12 +450,16 @@ export default function DashboardInterface() {
                             <h2>Catalogue des cours</h2>
                             <p className="card-sub">Drag & drop</p>
                         </div>
+
                         <div className="card-list">
                             {courses.length === 0 ? (
                                 <p className="empty-state">Aucun cours existant</p>
                             ) : (
                                 courses.map((course) => {
-                                    const teacher = teachers.find((t) => t.id === course.teacherId)
+                                    const teacher = teachers.find(
+                                        (t) => t.id === course.teacherId
+                                    );
+
                                     return (
                                         <article
                                             key={course.id}
@@ -309,11 +467,272 @@ export default function DashboardInterface() {
                                             onDragStart={() => setDraggedCourseId(course.id)}
                                             className={`draggable-card ${CARD_COLORS[course.color]}`}
                                         >
-                                            <p className="card-title-sm">{course.title}</p>
-                                            <p className="card-sub">{teacher?.name ?? 'Non assigné'} - {course.duration}</p>
+                                            {/* Informations du cours */}
+                                            <div className="course-info">
+                                                <p className="card-title-sm">
+                                                    {course.title}
+                                                </p>
+
+                                                <p className="card-sub">
+                                                    {teacher?.name ?? "Non assigné"} - {course.duration}
+                                                </p>
+                                            </div>
+
+                                            {/* Menu actions */}
+                                            <div className="course-actions">
+
+                                                <button
+                                                    type="button"
+                                                    className="action-menu-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+
+                                                        setOpenMenuId(
+                                                            openMenuId === course.id
+                                                                ? null
+                                                                : course.id
+                                                        );
+                                                    }}
+                                                >
+                                                    <EllipsisVertical size={20} />
+                                                </button>
+
+                                                {/* Menu Modifier / Supprimer */}
+                                                {openMenuId === course.id && (
+                                                    <div className="action-menu">
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEditCourse(course);
+                                                            }}
+                                                        >
+                                                            <Pencil size={16} />
+                                                            Modifier
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            className="delete-action"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteCourse(course);
+                                                            }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                            Supprimer
+                                                        </button>
+
+                                                    </div>
+                                                )}
+                                            </div>
                                         </article>
-                                    )
+                                    );
                                 })
+                            )}
+                            {courseToEdit && (
+                                <div
+                                    className="modal-overlay"
+                                    onClick={() => {
+                                        setCourseToEdit(null);
+                                        setFormError('');
+                                    }}
+                                >
+                                    <div
+                                        className="modal-card"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <h3>Modifier le cours</h3>
+
+                                        <p className="card-sub">
+                                            Modification de : {courseToEdit.title}
+                                        </p>
+
+                                        {formError && (
+                                            <p className="empty-state">
+                                                {formError}
+                                            </p>
+                                        )}
+
+                                        <form
+                                            onSubmit={submitEditCourse}
+                                            className="modal-form"
+                                        >
+
+                                            <input
+                                                type="text"
+                                                placeholder="Intitulé du cours"
+                                                value={courseForm.title}
+                                                onChange={(e) =>
+                                                    setCourseForm((prev) => ({
+                                                        ...prev,
+                                                        title: e.target.value,
+                                                    }))
+                                                }
+                                            />
+
+                                            <input
+                                                type="text"
+                                                placeholder="Salle"
+                                                value={courseForm.room}
+                                                onChange={(e) =>
+                                                    setCourseForm((prev) => ({
+                                                        ...prev,
+                                                        room: e.target.value,
+                                                    }))
+                                                }
+                                            />
+
+                                            <select
+                                                value={courseForm.teacherId}
+                                                onChange={(e) =>
+                                                    setCourseForm((prev) => ({
+                                                        ...prev,
+                                                        teacherId: e.target.value,
+                                                    }))
+                                                }
+                                            >
+                                                <option value="">
+                                                    Choisir un professeur
+                                                </option>
+
+                                                {teachers.map((teacher) => (
+                                                    <option
+                                                        key={teacher.id}
+                                                        value={teacher.id}
+                                                    >
+                                                        {teacher.name} - {teacher.subject}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <div className="inline-fields">
+
+                                                <select
+                                                    value={courseForm.duration}
+                                                    onChange={(e) =>
+                                                        setCourseForm((prev) => ({
+                                                            ...prev,
+                                                            duration: e.target.value,
+                                                        }))
+                                                    }
+                                                >
+                                                    <option value="1h">1h</option>
+                                                    <option value="2h">2h</option>
+                                                    <option value="3h">3h</option>
+                                                </select>
+
+                                                <select
+                                                    value={courseForm.color}
+                                                    onChange={(e) =>
+                                                        setCourseForm((prev) => ({
+                                                            ...prev,
+                                                            color: e.target.value as Course['color'],
+                                                        }))
+                                                    }
+                                                >
+                                                    <option value="blue">Bleu</option>
+                                                    <option value="green">Vert</option>
+                                                    <option value="purple">Violet</option>
+                                                    <option value="yellow">Jaune</option>
+                                                </select>
+
+                                            </div>
+
+                                            <div className="action-row">
+
+                                                <button
+                                                    type="button"
+                                                    className="ghost-btn"
+                                                    onClick={() => {
+                                                        setCourseToEdit(null);
+                                                        setFormError('');
+                                                    }}
+                                                >
+                                                    Annuler
+                                                </button>
+
+                                                <button
+                                                    type="submit"
+                                                    className="primary-btn"
+                                                    disabled={isUpdatingCourse}
+                                                >
+                                                    {isUpdatingCourse
+                                                        ? "Modification..."
+                                                        : "Enregistrer les modifications"
+                                                    }
+                                                </button>
+
+                                            </div>
+
+                                        </form>
+
+                                    </div>
+                                </div>
+                            )}
+
+                            {courseToDelete && (
+                                <div
+                                    className="modal-overlay"
+                                    onClick={() => {
+                                        if (!isDeletingCourse) {
+                                            setCourseToDelete(null);
+                                            setFormError('');
+                                        }
+                                    }}
+                                >
+                                    <div
+                                        className="modal-card"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <h3>Supprimer le cours</h3>
+
+                                        <p className="empty-state">
+                                            Voulez-vous vraiment supprimer le cours
+                                            <strong> {courseToDelete.title}</strong> ?
+                                        </p>
+
+                                        <p className="card-sub">
+                                            Cette action est irréversible.
+                                        </p>
+
+                                        {formError && (
+                                            <p className="empty-state">
+                                                {formError}
+                                            </p>
+                                        )}
+
+                                        <div className="action-row">
+
+                                            <button
+                                                type="button"
+                                                className="ghost-btn"
+                                                disabled={isDeletingCourse}
+                                                onClick={() => {
+                                                    setCourseToDelete(null);
+                                                    setFormError('');
+                                                }}
+                                            >
+                                                Annuler
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="danger-btn"
+                                                disabled={isDeletingCourse}
+                                                onClick={confirmDeleteCourse}
+                                            >
+                                                {isDeletingCourse
+                                                    ? "Suppression..."
+                                                    : "Oui, supprimer"
+                                                }
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </section>

@@ -80,9 +80,17 @@ h3 {
   border-radius: 50%;
 }
 
-.priority-dot.danger { background: #ef4444; }
-.priority-dot.warning { background: #f59e0b; }
-.priority-dot.ok { background: #10b981; }
+.priority-dot.danger {
+  background: #ef4444;
+}
+
+.priority-dot.warning {
+  background: #f59e0b;
+}
+
+.priority-dot.ok {
+  background: #10b981;
+}
 
 .dashboard-head {
   display: flex;
@@ -143,9 +151,17 @@ h3 {
   margin-top: 6px;
 }
 
-.kpi-card.green { background: #d9f6e7; }
-.kpi-card.yellow { background: #fef5c7; }
-.kpi-card.purple { background: #ece6ff; }
+.kpi-card.green {
+  background: #d9f6e7;
+}
+
+.kpi-card.yellow {
+  background: #fef5c7;
+}
+
+.kpi-card.purple {
+  background: #ece6ff;
+}
 
 .timetable-card {
   padding: 10px;
@@ -225,10 +241,21 @@ h3 {
   padding: 9px;
 }
 
+/* ========================================= */
+/* CARTE COURS - MODIFIÉ POUR LE MENU ⋮      */
+/* ========================================= */
+
 .draggable-card {
   cursor: grab;
   border: 1px solid rgba(100, 116, 139, 0.15);
   transition: transform 180ms ease;
+
+  /* Ajout */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .draggable-card:active {
@@ -236,10 +263,131 @@ h3 {
   transform: scale(0.99);
 }
 
-.course-blue { background: #dbeafe; }
-.course-green { background: #d9f6e7; }
-.course-purple { background: #e9e4ff; }
-.course-yellow { background: #fdecc8; }
+/* Informations du cours */
+
+.course-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Conteneur du bouton ⋮ */
+
+.course-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Bouton circulaire ⋮ */
+
+.action-menu-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.65);
+  color: #334155;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.action-menu-button:hover {
+  background: #ffffff;
+  transform: scale(1.05);
+}
+
+/* Menu déroulant */
+
+.action-menu {
+  position: absolute;
+
+  top: calc(100% + 5px);
+  right: 0;
+
+  width: 145px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  padding: 5px;
+
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+
+  z-index: 100;
+}
+
+/* Boutons Modifier / Supprimer */
+
+.action-menu button {
+  width: 100%;
+
+  border: none;
+  background: transparent;
+
+  padding: 8px 9px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 7px;
+
+  color: #334155;
+
+  font-size: 11px;
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: background 150ms ease;
+}
+
+.action-menu button:hover {
+  background: #f1f5f9;
+}
+
+/* Bouton Supprimer */
+
+.action-menu .delete-action {
+  color: #dc2626;
+}
+
+.action-menu .delete-action:hover {
+  background: #fee2e2;
+}
+
+/* ========================================= */
+/* FIN MENU ACTIONS                          */
+/* ========================================= */
+
+.course-blue {
+  background: #dbeafe;
+}
+
+.course-green {
+  background: #d9f6e7;
+}
+
+.course-purple {
+  background: #e9e4ff;
+}
+
+.course-yellow {
+  background: #fdecc8;
+}
 
 .badge {
   font-size: 10px;
@@ -322,8 +470,13 @@ h3 {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -331,6 +484,7 @@ h3 {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -342,6 +496,7 @@ h3 {
     opacity: 0;
     transform: scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -349,8 +504,13 @@ h3 {
 }
 
 @keyframes fadeModal {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 1260px) {
