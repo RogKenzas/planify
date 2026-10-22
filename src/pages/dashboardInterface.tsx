@@ -3,6 +3,8 @@ import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, typ
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
 import './dashboardInterface.css'
+import ClassroomManager from '../components/classrooms/ClassroomManager'
+import type { Classroom } from '../api/classrooms'
 import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 
 type Reminder = {
@@ -56,6 +58,7 @@ export default function DashboardInterface() {
     const [teachers, setTeachers] = useState<Teacher[]>([])
     const [courses, setCourses] = useState<Course[]>([])
     const [schedule, setSchedule] = useState<ScheduleEntry[]>([])
+    const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null)
     const [formError, setFormError] = useState('')
     const [selectedSlot, setSelectedSlot] = useState<{ day: string; time: string } | null>(null)
     const [slotMode, setSlotMode] = useState<'actions' | 'edit'>('actions')
@@ -336,6 +339,18 @@ export default function DashboardInterface() {
         }
     };
 
+    const handleSelectClassroom = (
+        classroom: Classroom
+    ) => {
+        setSelectedClassroom(classroom)
+
+        console.log(
+            'Salle sélectionnée :',
+            classroom.name,
+            classroom.id
+        )
+    }
+
     return (
         <div className="dashboard-interface-page">
             <TopSideBar onMenuClick={() => setIsMenuOpen(true)} />
@@ -357,6 +372,16 @@ export default function DashboardInterface() {
                                 </div>
                             </article>
                         ))}
+                    </div>
+
+                    <div className="classroom-dashboard-section">
+
+                        <ClassroomManager
+                            teachers={teachers}
+                            selectedClassroomId={selectedClassroom?.id ?? null}
+                            onSelectClassroom={handleSelectClassroom}
+                        />
+
                     </div>
                 </aside>
 
@@ -845,6 +870,7 @@ export default function DashboardInterface() {
                     </div>
                 </div>
             )}
+
             {selectedSlot && selectedSlotCourse && (
                 <div className="modal-overlay" onClick={closeSlotModal}>
                     <div className="modal-card" onClick={(e) => e.stopPropagation()}>
