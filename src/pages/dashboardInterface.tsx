@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, type Course, type Teacher } from '../api/schedule'
+import {
+    createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot,
+} from '../api/schedule'
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
 import './dashboardInterface.css'
 import ClassroomManager from '../components/classrooms/ClassroomManager'
-import type { Classroom } from '../api/classrooms'
+import { getClassrooms, type Classroom } from '../api/classrooms'
 import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 
 type Reminder = {
@@ -12,13 +14,6 @@ type Reminder = {
     title: string
     due: string
     priority: 'haute' | 'moyenne' | 'basse'
-}
-
-type ScheduleEntry = {
-    id: string
-    day: string
-    time: string
-    courseId: string
 }
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
@@ -45,7 +40,7 @@ export default function DashboardInterface() {
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
     const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
-
+    const [draggedScheduleSlot, setDraggedScheduleSlot] = useState<ScheduleSlot | null>(null)
     const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
     const [isDeletingCourse, setIsDeletingCourse] = useState(false);
 
@@ -57,7 +52,9 @@ export default function DashboardInterface() {
 
     const [teachers, setTeachers] = useState<Teacher[]>([])
     const [courses, setCourses] = useState<Course[]>([])
-    const [schedule, setSchedule] = useState<ScheduleEntry[]>([])
+    const [classrooms, setClassrooms] = useState<Classroom[]>([])
+    const [schedule, setSchedule] = useState<ScheduleSlot[]>([])
+    const [isScheduleLoading, setIsScheduleLoading] = useState(false)
     const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null)
     const [formError, setFormError] = useState('')
     const [selectedSlot, setSelectedSlot] = useState<{ day: string; time: string } | null>(null)
@@ -66,7 +63,7 @@ export default function DashboardInterface() {
     const [teacherForm, setTeacherForm] = useState({ name: '', subject: '' })
     const [courseForm, setCourseForm] = useState({
         title: '',
-        room: '',
+        classroomId: '',
         duration: '2h',
         teacherId: '',
         color: 'blue' as Course['color'],
@@ -74,9 +71,34 @@ export default function DashboardInterface() {
 
     useEffect(() => {
         const loadPlanningData = async () => {
-            const [teacherResult, courseResult] = await Promise.allSettled([getTeachers(), getCourses()])
-            setTeachers(teacherResult.status === 'fulfilled' ? teacherResult.value : [])
-            setCourses(courseResult.status === 'fulfilled' ? courseResult.value : [])
+
+            const [
+                teacherResult,
+                courseResult,
+                classroomResult
+            ] = await Promise.allSettled([
+                getTeachers(),
+                getCourses(),
+                getClassrooms()
+            ])
+
+            setTeachers(
+                teacherResult.status === 'fulfilled'
+                    ? teacherResult.value
+                    : []
+            )
+
+            setCourses(
+                courseResult.status === 'fulfilled'
+                    ? courseResult.value
+                    : []
+            )
+
+            setClassrooms(
+                classroomResult.status === 'fulfilled'
+                    ? classroomResult.value
+                    : []
+            )
         }
 
         void loadPlanningData()
@@ -104,34 +126,152 @@ export default function DashboardInterface() {
     const totalPlanned = schedule.length
     const activeTeachers = teachers.length
 
-    const onDropCourse = (day: string, time: string) => {
-        if (!draggedCourseId) return
-        setSchedule((prev) => {
-            const existing = prev.find((slot) => slot.day === day && slot.time === time)
-            if (existing) {
-                return prev.map((slot) => (slot.id === existing.id ? { ...slot, courseId: draggedCourseId } : slot))
+    const onDropCourse = async (
+        day: string,
+        time: string
+    ) => {
+        console.log('DROP :', { draggedCourseId, selectedClassroom, day, time })
+        if (!draggedCourseId || !selectedClassroom) {
+            if (!selectedClassroom) {
+                setFormError(
+                    'Sélectionne une salle avant de planifier un cours.'
+                )
             }
-            return [...prev, { id: `s${Date.now()}`, day, time, courseId: draggedCourseId }]
-        })
+            return
+        }
+
+        // Si on déplace un cours déjà présent dans le planning
+        // vers exactement la même case, on ne fait rien.
+        if (
+            draggedScheduleSlot &&
+            draggedScheduleSlot.day === day &&
+            draggedScheduleSlot.time === time
+        ) {
+            setDraggedCourseId(null)
+            setDraggedScheduleSlot(null)
+            return
+        }
+
+        setFormError('')
+        setIsScheduleLoading(true)
+
+        try {
+            /*
+             * 1. Enregistrer le cours dans sa nouvelle case.
+             *
+             * Cela fonctionne aussi si le cours vient directement
+             * du catalogue.
+             */
+            await upsertScheduleSlot(
+                selectedClassroom.id,
+                {
+                    courseId: draggedCourseId,
+                    day,
+                    time,
+                }
+            )
+
+            /*
+             * 2. Si le cours vient déjà du planning,
+             * supprimer son ancien ScheduleSlot.
+             */
+            if (draggedScheduleSlot) {
+                await deleteScheduleSlot(
+                    selectedClassroom.id,
+                    draggedScheduleSlot.id
+                )
+            }
+
+            /*
+             * 3. Recharger le planning depuis MongoDB.
+             *
+             * On ne reconstruit pas manuellement le state :
+             * MongoDB reste notre source de vérité.
+             */
+            const refreshedSchedule =
+                await getClassroomSchedule(
+                    selectedClassroom.id
+                )
+
+            setSchedule(refreshedSchedule)
+
+        } catch (error) {
+            console.error(
+                'Erreur déplacement du cours :',
+                error
+            )
+
+            /*
+             * En cas d'erreur, on recharge quand même MongoDB
+             * pour remettre l'interface dans l'état réellement
+             * enregistré.
+             */
+            try {
+                const refreshedSchedule =
+                    await getClassroomSchedule(
+                        selectedClassroom.id
+                    )
+
+                setSchedule(refreshedSchedule)
+            } catch (refreshError) {
+                console.error(
+                    'Erreur rechargement planning :',
+                    refreshError
+                )
+            }
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : 'Impossible de déplacer le cours.'
+            )
+
+        } finally {
+            setDraggedCourseId(null)
+            setDraggedScheduleSlot(null)
+            setIsScheduleLoading(false)
+        }
     }
 
-    const getSlotCourse = (day: string, time: string) => {
-        const slot = schedule.find((entry) => entry.day === day && entry.time === time)
-        if (!slot) return null
-        return courses.find((course) => course.id === slot.courseId) ?? null
+
+
+    const getSlotCourse = (
+        day: string,
+        time: string
+    ) => {
+        const slot = schedule.find(
+            (entry) =>
+                entry.day === day &&
+                entry.time === time
+        )
+
+        if (!slot) {
+            return null
+        }
+
+        return (
+            slot.course ??
+            courses.find(
+                (course) => course.id === slot.courseId
+            ) ??
+            null
+        )
     }
 
     const selectedSlotCourse = selectedSlot ? getSlotCourse(selectedSlot.day, selectedSlot.time) : null
 
     const openSlotActions = (day: string, time: string) => {
         const course = getSlotCourse(day, time)
+
         if (!course) return
+
         setFormError('')
         setSelectedSlot({ day, time })
         setSlotMode('actions')
+
         setCourseForm({
             title: course.title,
-            room: course.room,
+            classroomId: course.classroomId,
             duration: course.duration,
             teacherId: course.teacherId,
             color: course.color,
@@ -142,18 +282,67 @@ export default function DashboardInterface() {
         setSelectedSlot(null)
         setSlotMode('actions')
         setFormError('')
-        setCourseForm({ title: '', room: '', duration: '2h', teacherId: '', color: 'blue' })
+
+        setCourseForm({
+            title: '',
+            classroomId: '',
+            duration: '2h',
+            teacherId: '',
+            color: 'blue'
+        })
     }
 
-    const removeSlotCourse = () => {
-        if (!selectedSlot) return
-        setSchedule((prev) => prev.filter((entry) => !(entry.day === selectedSlot.day && entry.time === selectedSlot.time)))
-        closeSlotModal()
+    const removeSlotCourse = async () => {
+        if (!selectedSlot || !selectedClassroom) {
+            return
+        }
+
+        const slot = schedule.find(
+            (entry) =>
+                entry.day === selectedSlot.day &&
+                entry.time === selectedSlot.time
+        )
+
+        if (!slot) {
+            return
+        }
+
+        setFormError('')
+        setIsScheduleLoading(true)
+
+        try {
+            await deleteScheduleSlot(
+                selectedClassroom.id,
+                slot.id
+            )
+
+            setSchedule((previousSchedule) =>
+                previousSchedule.filter(
+                    (entry) => entry.id !== slot.id
+                )
+            )
+
+            closeSlotModal()
+
+        } catch (error) {
+            console.error(
+                'Erreur suppression du créneau :',
+                error
+            )
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : 'Impossible de supprimer le cours du planning.'
+            )
+        } finally {
+            setIsScheduleLoading(false)
+        }
     }
 
     const saveSlotCourse = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!selectedSlotCourse || !courseForm.title || !courseForm.room || !courseForm.teacherId) return
+        if (!selectedSlotCourse || !courseForm.title || !courseForm.classroomId || !courseForm.teacherId) return
         setFormError('')
         try {
             const course = await updateCourse(selectedSlotCourse.id, courseForm)
@@ -180,12 +369,20 @@ export default function DashboardInterface() {
 
     const submitCourse = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!courseForm.title || !courseForm.room || !courseForm.teacherId) return
-        setFormError('')
+        if (
+            !courseForm.title ||
+            !courseForm.classroomId ||
+            !courseForm.teacherId
+        ) {
+            setFormError(
+                'Veuillez renseigner le cours, la salle et le professeur.'
+            )
+            return
+        } setFormError('')
         try {
             const course = await createCourse(courseForm)
             setCourses((prev) => [course, ...prev])
-            setCourseForm({ title: '', room: '', duration: '2h', teacherId: '', color: 'blue' })
+            setCourseForm({ title: '', classroomId: '', duration: '2h', teacherId: '', color: 'blue' })
             setShowCourseModal(false)
         } catch (error) {
             setFormError(error instanceof Error ? error.message : "Impossible d'enregistrer le cours")
@@ -262,7 +459,7 @@ export default function DashboardInterface() {
         // On remplit le formulaire avec ses données actuelles
         setCourseForm({
             title: course.title,
-            room: course.room,
+            classroomId: course.classroomId,
             duration: course.duration,
             teacherId: course.teacherId,
             color: course.color,
@@ -281,7 +478,7 @@ export default function DashboardInterface() {
 
         if (
             !courseForm.title ||
-            !courseForm.room ||
+            !courseForm.classroomId ||
             !courseForm.teacherId
         ) {
             setFormError("Veuillez remplir tous les champs obligatoires.");
@@ -318,7 +515,7 @@ export default function DashboardInterface() {
             // Nettoyer le formulaire
             setCourseForm({
                 title: '',
-                room: '',
+                classroomId: '',
                 duration: '2h',
                 teacherId: '',
                 color: 'blue',
@@ -339,16 +536,41 @@ export default function DashboardInterface() {
         }
     };
 
-    const handleSelectClassroom = (
+    const handleSelectClassroom = async (
         classroom: Classroom
     ) => {
         setSelectedClassroom(classroom)
+        setFormError('')
+        setIsScheduleLoading(true)
 
-        console.log(
-            'Salle sélectionnée :',
-            classroom.name,
-            classroom.id
-        )
+        try {
+            const classroomSchedule = await getClassroomSchedule(
+                classroom.id
+            )
+
+            setSchedule(classroomSchedule)
+
+            console.log(
+                'Planning chargé pour :',
+                classroom.name,
+                classroomSchedule
+            )
+        } catch (error) {
+            console.error(
+                'Erreur chargement planning :',
+                error
+            )
+
+            setSchedule([])
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : "Impossible de charger l'emploi du temps."
+            )
+        } finally {
+            setIsScheduleLoading(false)
+        }
     }
 
     return (
@@ -414,9 +636,25 @@ export default function DashboardInterface() {
 
                     <section className="soft-card timetable-card">
                         <div className="panel-header">
-                            <h2>Emploi du temps hebdomadaire</h2>
+                            <h2>
+                                {selectedClassroom
+                                    ? `Emploi du temps - ${selectedClassroom.name}`
+                                    : 'Emploi du temps hebdomadaire'}
+                            </h2>
                             <p className="card-sub">Glisse un cours, puis double-clique un créneau pour le modifier ou le retirer.</p>
                         </div>
+
+                        {!selectedClassroom && (
+                            <p className="empty-state">
+                                Sélectionne une salle pour afficher son emploi du temps.
+                            </p>
+                        )}
+
+                        {isScheduleLoading && (
+                            <p className="empty-state">
+                                Chargement de l'emploi du temps...
+                            </p>
+                        )}
 
                         <div className="timetable-grid">
                             <div className="corner-cell" />
@@ -438,12 +676,40 @@ export default function DashboardInterface() {
                                                 onDoubleClick={() => openSlotActions(day, time)}
                                             >
                                                 {slotCourse ? (
-                                                    <>
-                                                        <p className="card-title-sm">{slotCourse.title}</p>
-                                                        <p className="card-sub">{slotCourse.room}</p>
-                                                    </>
+                                                    <div
+                                                        draggable
+                                                        className="scheduled-course-content"
+
+                                                        onDragStart={(e) => {
+                                                            e.stopPropagation()
+
+                                                            const slot = schedule.find(
+                                                                (entry) =>
+                                                                    entry.day === day &&
+                                                                    entry.time === time
+                                                            )
+
+                                                            setDraggedCourseId(slotCourse.id)
+                                                            setDraggedScheduleSlot(slot ?? null)
+                                                        }}
+
+                                                        onDragEnd={() => {
+                                                            setDraggedCourseId(null)
+                                                            setDraggedScheduleSlot(null)
+                                                        }}
+                                                    >
+                                                        <p className="card-title-sm">
+                                                            {slotCourse.title}
+                                                        </p>
+
+                                                        <p className="card-sub">
+                                                            {slotCourse.classroom?.name ?? 'Salle non assignée'} | {teachers.find((t) => t.id === slotCourse.teacherId)?.name ?? 'Professeur non assigné'}
+                                                        </p>
+                                                    </div>
                                                 ) : (
-                                                    <p className="card-sub">Déposer ici</p>
+                                                    <p className="card-sub">
+                                                        Déposer ici
+                                                    </p>
                                                 )}
                                             </div>
                                         )
@@ -464,7 +730,7 @@ export default function DashboardInterface() {
                             <article key={item.id} className={`soft-card course-pill ${CARD_COLORS[item.course.color]}`}>
                                 <p className="card-title-sm">{item.time} - {item.course.title}</p>
                                 <p className="card-sub">
-                                    {item.teacher?.name ?? 'Professeur non affecté'} | {item.course.room}
+                                    {item.teacher?.name ?? 'Professeur non affecté'} | {item.course.classroom?.name ?? 'Salle non assignée'}
                                 </p>
                             </article>
                         ))}
@@ -489,7 +755,15 @@ export default function DashboardInterface() {
                                         <article
                                             key={course.id}
                                             draggable
-                                            onDragStart={() => setDraggedCourseId(course.id)}
+                                            onDragStart={() => {
+                                                console.log('DRAG START :', course.id, course.title)
+                                                setDraggedCourseId(course.id)
+                                                setDraggedScheduleSlot(null)
+                                            }}
+                                            onDragEnd={() => {
+                                                setDraggedCourseId(null)
+                                                setDraggedScheduleSlot(null)
+                                            }}
                                             className={`draggable-card ${CARD_COLORS[course.color]}`}
                                         >
                                             {/* Informations du cours */}
@@ -597,17 +871,32 @@ export default function DashboardInterface() {
                                                 }
                                             />
 
-                                            <input
-                                                type="text"
-                                                placeholder="Salle"
-                                                value={courseForm.room}
+                                            <select
+                                                value={courseForm.classroomId}
                                                 onChange={(e) =>
                                                     setCourseForm((prev) => ({
                                                         ...prev,
-                                                        room: e.target.value,
+                                                        classroomId: e.target.value
                                                     }))
                                                 }
-                                            />
+                                                disabled={classrooms.length === 0}
+                                            >
+                                                <option value="">
+                                                    {classrooms.length === 0
+                                                        ? 'Aucune salle existante'
+                                                        : 'Choisir une salle'
+                                                    }
+                                                </option>
+
+                                                {classrooms.map((classroom) => (
+                                                    <option
+                                                        key={classroom.id}
+                                                        value={classroom.id}
+                                                    >
+                                                        {classroom.name}
+                                                    </option>
+                                                ))}
+                                            </select>
 
                                             <select
                                                 value={courseForm.teacherId}
@@ -825,12 +1114,32 @@ export default function DashboardInterface() {
                                 value={courseForm.title}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                             />
-                            <input
-                                type="text"
-                                placeholder="Salle"
-                                value={courseForm.room}
-                                onChange={(e) => setCourseForm((prev) => ({ ...prev, room: e.target.value }))}
-                            />
+                            <select
+                                value={courseForm.classroomId}
+                                onChange={(e) =>
+                                    setCourseForm((prev) => ({
+                                        ...prev,
+                                        classroomId: e.target.value
+                                    }))
+                                }
+                                disabled={classrooms.length === 0}
+                            >
+                                <option value="">
+                                    {classrooms.length === 0
+                                        ? 'Aucune salle existante'
+                                        : 'Choisir une salle'
+                                    }
+                                </option>
+
+                                {classrooms.map((classroom) => (
+                                    <option
+                                        key={classroom.id}
+                                        value={classroom.id}
+                                    >
+                                        {classroom.name}
+                                    </option>
+                                ))}
+                            </select>
                             <select
                                 value={courseForm.teacherId}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
@@ -879,7 +1188,7 @@ export default function DashboardInterface() {
                                 <p className="card-sub">{selectedSlot.day} · {selectedSlot.time}</p>
                                 <h3>{selectedSlotCourse.title}</h3>
                                 <p className="empty-state">
-                                    {selectedSlotCourse.room} · {selectedSlotCourse.duration}
+                                    {selectedSlotCourse.classroom?.name ?? 'Salle non assignée'} · {selectedSlotCourse.duration}
                                 </p>
                                 <div className="action-row">
                                     <button type="button" className="ghost-btn" onClick={closeSlotModal}>Annuler</button>
@@ -898,12 +1207,32 @@ export default function DashboardInterface() {
                                         value={courseForm.title}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                                     />
-                                    <input
-                                        type="text"
-                                        placeholder="Salle"
-                                        value={courseForm.room}
-                                        onChange={(e) => setCourseForm((prev) => ({ ...prev, room: e.target.value }))}
-                                    />
+                                    <select
+                                        value={courseForm.classroomId}
+                                        onChange={(e) =>
+                                            setCourseForm((prev) => ({
+                                                ...prev,
+                                                classroomId: e.target.value
+                                            }))
+                                        }
+                                        disabled={classrooms.length === 0}
+                                    >
+                                        <option value="">
+                                            {classrooms.length === 0
+                                                ? 'Aucune salle existante'
+                                                : 'Choisir une salle'
+                                            }
+                                        </option>
+
+                                        {classrooms.map((classroom) => (
+                                            <option
+                                                key={classroom.id}
+                                                value={classroom.id}
+                                            >
+                                                {classroom.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     <select
                                         value={courseForm.teacherId}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
@@ -942,6 +1271,17 @@ export default function DashboardInterface() {
                                 </form>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {isScheduleLoading && (
+                <div className="planning-loader-overlay">
+                    <div className="planning-loader">
+                        <div className="planning-loader-square square-1"></div>
+                        <div className="planning-loader-square square-2"></div>
+                        <div className="planning-loader-square square-3"></div>
+                        <div className="planning-loader-square square-4"></div>
                     </div>
                 </div>
             )}

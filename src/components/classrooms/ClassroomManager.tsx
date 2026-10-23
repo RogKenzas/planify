@@ -344,7 +344,7 @@ export default function ClassroomManager({
           </p>
 
           <h2>
-            Gestion des salles
+            Gestion des Classes
           </h2>
 
         </div>
@@ -358,7 +358,7 @@ export default function ClassroomManager({
 
           <Plus size={14} />
 
-          Nouvelle salle
+          Nouvelle classe
 
         </button>
 

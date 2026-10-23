@@ -139,13 +139,13 @@ export default function ClassroomModal({
           <div>
 
             <p className="card-sub">
-              Gestion des salles
+              Gestion des classes
             </p>
 
             <h2>
               {isEditing
-                ? 'Modifier la salle'
-                : 'Nouvelle salle'}
+                ? 'Modifier la classe'
+                : 'Nouvelle classe'}
             </h2>
 
           </div>
@@ -173,12 +173,12 @@ export default function ClassroomModal({
           onSubmit={handleSubmit}
         >
 
-          {/* Nom de la salle */}
+          {/* Nom de la classe */}
 
           <label className="classroom-form-group">
 
             <span>
-              Nom de la salle
+              Nom de la classe
             </span>
 
             <input
@@ -287,7 +287,7 @@ export default function ClassroomModal({
                 ? 'Enregistrement...'
                 : isEditing
                   ? 'Enregistrer'
-                  : 'Créer la salle'}
+                  : 'Créer la classe'}
 
             </button>
 

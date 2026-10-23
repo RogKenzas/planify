@@ -5,13 +5,41 @@ export type Teacher = {
   initials: string
 }
 
+export type CourseClassroom = {
+  id: string
+  name: string
+}
+
 export type Course = {
   id: string
+  _id?: string
   title: string
   teacherId: string
-  room: string
+  classroomId: string
+  classroom?: CourseClassroom | null
   duration: string
   color: 'blue' | 'green' | 'purple' | 'yellow'
+}
+
+export type ScheduleSlot = {
+  id: string
+  classroomId: string
+  courseId: string
+  day: string
+  time: string
+
+  course: Course | null
+
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type CoursePayload = {
+  title: string
+  teacherId: string
+  classroomId: string
+  duration: string
+  color: Course['color']
 }
 
 const API_BASE = 'https://backend-planify-jsk6.onrender.com'
@@ -46,25 +74,120 @@ export const createTeacher = async (payload: { name: string; subject: string }) 
 }
 
 export const getCourses = async () => {
-  const res = await fetch(`${API_BASE}/api/schedule/data`)
-  const data = await parseJson<Course[] | { value?: Course[] }>(res)
+  const res = await fetch(`${API_BASE}/api/courses`)
+
+  const data = await parseJson<
+    Course[] | { value?: Course[] }
+  >(res)
+
+  const courses = asArray(data)
+
+  return courses.map((course) => ({
+    ...course,
+    id: course.id ?? course._id ?? '',
+  }))
+}
+
+export const createCourse = async (
+  payload: CoursePayload
+) => {
+  const res = await fetch(
+    `${API_BASE}/api/courses`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  )
+
+  return parseJson<Course>(res)
+}
+
+export const updateCourse = async (
+  id: string,
+  payload: CoursePayload
+) => {
+  const res = await fetch(
+    `${API_BASE}/api/courses/${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }
+  )
+
+  return parseJson<Course>(res)
+}
+
+/**
+ * Charge l'emploi du temps d'une salle.
+ */
+export const getClassroomSchedule = async (
+  classroomId: string
+) => {
+  const res = await fetch(
+    `${API_BASE}/api/schedule/classroom/${classroomId}`
+  )
+
+  const data = await parseJson<
+    ScheduleSlot[] | { value?: ScheduleSlot[] }
+  >(res)
+
   return asArray(data)
 }
 
-export const createCourse = async (payload: Omit<Course, 'id'>) => {
-  const res = await fetch(`${API_BASE}/api/schedule/post`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  return parseJson<Course>(res)
+
+/**
+ * Ajoute ou remplace un cours dans un créneau.
+ *
+ * Si le créneau existe déjà pour :
+ * classroomId + day + time
+ *
+ * le backend le remplace.
+ */
+export const upsertScheduleSlot = async (
+  classroomId: string,
+  payload: {
+    courseId: string
+    day: string
+    time: string
+  }
+) => {
+  const res = await fetch(
+    `${API_BASE}/api/schedule/classroom/${classroomId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }
+  )
+
+  return parseJson<ScheduleSlot>(res)
 }
 
-export const updateCourse = async (id: string, payload: Omit<Course, 'id'>) => {
-  const res = await fetch(`${API_BASE}/api/schedule/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  return parseJson<Course>(res)
+
+/**
+ * Supprime un cours du planning.
+ */
+export const deleteScheduleSlot = async (
+  classroomId: string,
+  slotId: string
+) => {
+  const res = await fetch(
+    `${API_BASE}/api/schedule/classroom/${classroomId}/${slotId}`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  return parseJson<{
+    message: string
+    id?: string
+  }>(res)
 }

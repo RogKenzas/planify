@@ -831,7 +831,7 @@ h3 {
 }
 
 
-.classroom-form-group > span {
+.classroom-form-group>span {
   font-size: 11px;
   font-weight: 600;
 
@@ -905,21 +905,23 @@ h3 {
 /* ========================================= */
 
 .classroom-manager {
-  padding: 14px;
   height: 20em;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
 }
 
 
 .classroom-manager-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 12px;
-
   margin-bottom: 14px;
 }
 
@@ -936,14 +938,32 @@ h3 {
 /* Grille des salles */
 
 .classroom-grid {
-  display: grid;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  padding-bottom: 6px;
 
-  grid-template-columns:
-    repeat(auto-fill, minmax(190px, 1fr));
-
-  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
+.classroom-grid::-webkit-scrollbar {
+  width: 5px;
+}
+
+.classroom-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.classroom-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
 
 /* État vide */
 
@@ -1006,6 +1026,218 @@ h3 {
   color: #334155;
 }
 
+/* =========================================================
+   CLASSROOM LIST - AFFICHAGE HORIZONTAL
+   ========================================================= */
+
+/* =========================================================
+   CLASSROOM ROW
+   ========================================================= */
+
+.classroom-row {
+  width: 100%;
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+
+/* Salle sélectionnée */
+
+.classroom-row-active {
+  border-color: #111827;
+  background: #f8fafc;
+}
+
+
+/* Trois points à gauche */
+
+.classroom-row-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.classroom-row-menu {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #4b5563;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+
+/* Informations */
+
+.classroom-row-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.classroom-row-content h3 {
+  margin: 0;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #111827;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.classroom-row-content p {
+  margin: 2px 0 0;
+
+  font-size: 11px;
+
+  color: #64748b;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Bouton flèche style iOS */
+
+.classroom-row-arrow {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 25px;
+}
+
+.classroom-row-dropdown {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  z-index: 100;
+  width: 130px;
+  padding: 5px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.classroom-row-dropdown button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #334155;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.classroom-row-dropdown .classroom-row-delete {
+  color: #dc2626;
+}
+
+/* =========================================================
+   LOADER GLOBAL DU PLANNING
+   ========================================================= */
+
+.planning-loader-overlay {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.82);
+
+    z-index: 9999;
+}
+
+/* Loader inspiré du composant Uiverse sélectionné */
+
+.planning-loader {
+    position: relative;
+
+    width: 64px;
+    height: 64px;
+}
+
+.planning-loader-square {
+    position: absolute;
+
+    width: 24px;
+    height: 24px;
+
+    background: #111827;
+
+    border-radius: 6px;
+
+    animation: planning-loader-pulse 1.2s infinite ease-in-out;
+}
+
+.square-1 {
+    top: 0;
+    left: 0;
+}
+
+.square-2 {
+    top: 0;
+    right: 0;
+
+    animation-delay: 0.15s;
+}
+
+.square-3 {
+    bottom: 0;
+    right: 0;
+
+    animation-delay: 0.3s;
+}
+
+.square-4 {
+    bottom: 0;
+    left: 0;
+
+    animation-delay: 0.45s;
+}
+
+@keyframes planning-loader-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(0.55);
+        opacity: 0.35;
+    }
+}
 
 /* Responsive */
 

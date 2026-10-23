@@ -1,12 +1,12 @@
+import { useState } from 'react'
 import {
+  ArrowRight,
   EllipsisVertical,
-  GraduationCap,
   Pencil,
   Trash2,
 } from 'lucide-react'
 
 import type { Classroom } from '../../api/classrooms'
-
 
 type ClassroomCardProps = {
   classroom: Classroom
@@ -17,7 +17,6 @@ type ClassroomCardProps = {
   onDelete: (classroom: Classroom) => void
 }
 
-
 export default function ClassroomCard({
   classroom,
   isActive,
@@ -25,118 +24,75 @@ export default function ClassroomCard({
   onEdit,
   onDelete,
 }: ClassroomCardProps) {
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <article
-      className={`classroom-card ${isActive ? 'classroom-card-active' : ''}`}
+      className={`classroom-row ${
+        isActive ? 'classroom-row-active' : ''
+      }`}
       onClick={() => onSelect(classroom)}
     >
+      {/* Menu trois points */}
+      <div className="classroom-row-menu-wrapper">
+        <button
+          type="button"
+          className="classroom-row-menu"
+          aria-label={`Actions pour ${classroom.name}`}
+          onClick={(event) => {
+            event.stopPropagation()
+            setMenuOpen((current) => !current)
+          }}
+        >
+          <EllipsisVertical size={18} />
+        </button>
 
-      {/* Partie supérieure */}
-      <div className="classroom-card-header">
-
-        <div className="classroom-icon">
-          <GraduationCap size={18} />
-        </div>
-
-        <div className="classroom-actions">
-
-          <button
-            type="button"
-            className="classroom-menu-button"
-            aria-label={`Actions pour ${classroom.name}`}
-            onClick={(event) => {
-              event.stopPropagation()
-
-              const menu = event.currentTarget
-                .nextElementSibling as HTMLElement | null
-
-              menu?.classList.toggle('classroom-action-menu-open')
-            }}
+        {menuOpen && (
+          <div
+            className="classroom-row-dropdown"
+            onClick={(event) => event.stopPropagation()}
           >
-            <EllipsisVertical size={17} />
-          </button>
-
-
-          <div className="classroom-action-menu">
-
             <button
               type="button"
-              onClick={(event) => {
-                event.stopPropagation()
+              onClick={() => {
+                setMenuOpen(false)
                 onEdit(classroom)
               }}
             >
               <Pencil size={14} />
-
               Modifier
             </button>
 
-
             <button
               type="button"
-              className="delete-action"
-              onClick={(event) => {
-                event.stopPropagation()
+              className="classroom-row-delete"
+              onClick={() => {
+                setMenuOpen(false)
                 onDelete(classroom)
               }}
             >
               <Trash2 size={14} />
-
               Supprimer
             </button>
-
           </div>
-
-        </div>
-
+        )}
       </div>
 
-
-      {/* Nom de la salle */}
-      <div className="classroom-card-content">
-
+      {/* Informations */}
+      <div className="classroom-row-content">
         <h3>{classroom.name}</h3>
 
-        <p className="classroom-label">
-          Professeur titulaire
+        <p>
+          {classroom.teacher
+            ? classroom.teacher.name
+            : 'Aucun professeur titulaire'}
         </p>
-
-
-        {classroom.teacher ? (
-          <>
-            <p className="classroom-teacher-name">
-              {classroom.teacher.name}
-            </p>
-
-            <p className="card-sub">
-              {classroom.teacher.subject}
-            </p>
-          </>
-        ) : (
-          <p className="card-sub">
-            Aucun professeur affecté
-          </p>
-        )}
-
       </div>
 
-
-      {/* Indication de sélection */}
-      <div className="classroom-card-footer">
-
-        {isActive ? (
-          <span className="classroom-selected-badge">
-            Salle sélectionnée
-          </span>
-        ) : (
-          <span className="classroom-open-label">
-            Voir l'emploi du temps
-          </span>
-        )}
-
+      {/* Sélection de la salle */}
+      <div className="classroom-row-arrow">
+        <ArrowRight size={16} />
       </div>
-
     </article>
   )
 }
