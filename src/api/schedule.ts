@@ -1,3 +1,5 @@
+import type { Room } from "./rooms"
+
 export type Teacher = {
   id: string
   name: string
@@ -5,41 +7,33 @@ export type Teacher = {
   initials: string
 }
 
-export type CourseClassroom = {
-  id: string
-  name: string
-}
-
 export type Course = {
-  id: string
-  _id?: string
-  title: string
-  teacherId: string
-  classroomId: string
-  classroom?: CourseClassroom | null
-  duration: string
-  color: 'blue' | 'green' | 'purple' | 'yellow'
+    id: string
+    _id?: string
+    title: string
+    teacherId: string
+    duration: string
+    color: 'blue' | 'green' | 'purple' | 'yellow'
 }
 
 export type ScheduleSlot = {
-  id: string
-  classroomId: string
-  courseId: string
-  day: string
-  time: string
-
-  course: Course | null
-
-  createdAt?: string
-  updatedAt?: string
+    id: string
+    classroomId: string
+    courseId: string
+    roomId: string | null
+    day: string
+    time: string
+    course: Course | null
+    room: Room | null
+    createdAt?: string
+    updatedAt?: string
 }
 
 export type CoursePayload = {
-  title: string
-  teacherId: string
-  classroomId: string
-  duration: string
-  color: Course['color']
+    title: string
+    teacherId: string
+    duration: string
+    color: Course['color']
 }
 
 const API_BASE = 'https://backend-planify-jsk6.onrender.com'

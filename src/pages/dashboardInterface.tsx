@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-    createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot,
-} from '../api/schedule'
+import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot, } from '../api/schedule'
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
 import './dashboardInterface.css'
@@ -63,12 +61,10 @@ export default function DashboardInterface() {
     const [teacherForm, setTeacherForm] = useState({ name: '', subject: '' })
     const [courseForm, setCourseForm] = useState({
         title: '',
-        classroomId: '',
         duration: '2h',
         teacherId: '',
         color: 'blue' as Course['color'],
     })
-
     useEffect(() => {
         const loadPlanningData = async () => {
 
@@ -271,7 +267,6 @@ export default function DashboardInterface() {
 
         setCourseForm({
             title: course.title,
-            classroomId: course.classroomId,
             duration: course.duration,
             teacherId: course.teacherId,
             color: course.color,
@@ -285,7 +280,6 @@ export default function DashboardInterface() {
 
         setCourseForm({
             title: '',
-            classroomId: '',
             duration: '2h',
             teacherId: '',
             color: 'blue'
@@ -342,7 +336,7 @@ export default function DashboardInterface() {
 
     const saveSlotCourse = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!selectedSlotCourse || !courseForm.title || !courseForm.classroomId || !courseForm.teacherId) return
+        if (!selectedSlotCourse || !courseForm.title || !courseForm.teacherId) return
         setFormError('')
         try {
             const course = await updateCourse(selectedSlotCourse.id, courseForm)
@@ -371,18 +365,17 @@ export default function DashboardInterface() {
         e.preventDefault()
         if (
             !courseForm.title ||
-            !courseForm.classroomId ||
             !courseForm.teacherId
         ) {
             setFormError(
-                'Veuillez renseigner le cours, la salle et le professeur.'
+                'Veuillez renseigner le cours et le professeur.'
             )
             return
         } setFormError('')
         try {
             const course = await createCourse(courseForm)
             setCourses((prev) => [course, ...prev])
-            setCourseForm({ title: '', classroomId: '', duration: '2h', teacherId: '', color: 'blue' })
+            setCourseForm({ title: '', duration: '2h', teacherId: '', color: 'blue' })
             setShowCourseModal(false)
         } catch (error) {
             setFormError(error instanceof Error ? error.message : "Impossible d'enregistrer le cours")
@@ -459,7 +452,6 @@ export default function DashboardInterface() {
         // On remplit le formulaire avec ses données actuelles
         setCourseForm({
             title: course.title,
-            classroomId: course.classroomId,
             duration: course.duration,
             teacherId: course.teacherId,
             color: course.color,
@@ -478,7 +470,6 @@ export default function DashboardInterface() {
 
         if (
             !courseForm.title ||
-            !courseForm.classroomId ||
             !courseForm.teacherId
         ) {
             setFormError("Veuillez remplir tous les champs obligatoires.");
@@ -515,7 +506,6 @@ export default function DashboardInterface() {
             // Nettoyer le formulaire
             setCourseForm({
                 title: '',
-                classroomId: '',
                 duration: '2h',
                 teacherId: '',
                 color: 'blue',
@@ -703,7 +693,8 @@ export default function DashboardInterface() {
                                                         </p>
 
                                                         <p className="card-sub">
-                                                            {slotCourse.classroom?.name ?? 'Salle non assignée'} | {teachers.find((t) => t.id === slotCourse.teacherId)?.name ?? 'Professeur non assigné'}
+                                                            {selectedClassroom?.name ?? 'Classe non sélectionnée'}
+                                                            | {teachers.find((t) => t.id === slotCourse.teacherId)?.name ?? 'Professeur non assigné'}
                                                         </p>
                                                     </div>
                                                 ) : (
@@ -730,7 +721,7 @@ export default function DashboardInterface() {
                             <article key={item.id} className={`soft-card course-pill ${CARD_COLORS[item.course.color]}`}>
                                 <p className="card-title-sm">{item.time} - {item.course.title}</p>
                                 <p className="card-sub">
-                                    {item.teacher?.name ?? 'Professeur non affecté'} | {item.course.classroom?.name ?? 'Salle non assignée'}
+                                    {item.teacher?.name ?? 'Professeur non affecté'} | {selectedClassroom?.name ?? 'Classe non sélectionnée'}
                                 </p>
                             </article>
                         ))}
@@ -871,7 +862,7 @@ export default function DashboardInterface() {
                                                 }
                                             />
 
-                                            <select
+                                            {/* <select
                                                 value={courseForm.classroomId}
                                                 onChange={(e) =>
                                                     setCourseForm((prev) => ({
@@ -896,7 +887,7 @@ export default function DashboardInterface() {
                                                         {classroom.name}
                                                     </option>
                                                 ))}
-                                            </select>
+                                            </select> */}
 
                                             <select
                                                 value={courseForm.teacherId}
@@ -1114,7 +1105,7 @@ export default function DashboardInterface() {
                                 value={courseForm.title}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                             />
-                            <select
+                            {/* <select
                                 value={courseForm.classroomId}
                                 onChange={(e) =>
                                     setCourseForm((prev) => ({
@@ -1139,7 +1130,7 @@ export default function DashboardInterface() {
                                         {classroom.name}
                                     </option>
                                 ))}
-                            </select>
+                            </select> */}
                             <select
                                 value={courseForm.teacherId}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
@@ -1188,7 +1179,7 @@ export default function DashboardInterface() {
                                 <p className="card-sub">{selectedSlot.day} · {selectedSlot.time}</p>
                                 <h3>{selectedSlotCourse.title}</h3>
                                 <p className="empty-state">
-                                    {selectedSlotCourse.classroom?.name ?? 'Salle non assignée'} · {selectedSlotCourse.duration}
+                                    {selectedClassroom?.name ?? 'Salle non assignée'} · {selectedSlotCourse.duration}
                                 </p>
                                 <div className="action-row">
                                     <button type="button" className="ghost-btn" onClick={closeSlotModal}>Annuler</button>
@@ -1207,7 +1198,7 @@ export default function DashboardInterface() {
                                         value={courseForm.title}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                                     />
-                                    <select
+                                    {/* <select
                                         value={courseForm.classroomId}
                                         onChange={(e) =>
                                             setCourseForm((prev) => ({
@@ -1232,7 +1223,7 @@ export default function DashboardInterface() {
                                                 {classroom.name}
                                             </option>
                                         ))}
-                                    </select>
+                                    </select> */}
                                     <select
                                         value={courseForm.teacherId}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
