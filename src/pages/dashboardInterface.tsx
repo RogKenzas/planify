@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot, } from '../api/schedule'
+import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot, deleteAllCourses, deleteAllTeachers } from '../api/schedule'
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
 import './dashboardInterface.css'
 import ClassroomManager from '../components/classrooms/ClassroomManager'
 import { getClassrooms, type Classroom } from '../api/classrooms'
+import { createRoom, getRooms, type Room, type RoomPayload } from '../api/rooms'
 import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
+import RoomManager from '../components/rooms/RoomManager'
+import RoomModal from '../components/rooms/RoomModal'
 
 type Reminder = {
     id: string
@@ -41,7 +44,13 @@ export default function DashboardInterface() {
     const [draggedScheduleSlot, setDraggedScheduleSlot] = useState<ScheduleSlot | null>(null)
     const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
     const [isDeletingCourse, setIsDeletingCourse] = useState(false);
-
+    const [roomModalOpen, setRoomModalOpen] = useState(false)
+    const [roomSaving, setRoomSaving] = useState(false)
+    const [roomError, setRoomError] = useState('')
+    const [clearCoursesModalOpen, setClearCoursesModalOpen] = useState(false)
+    const [clearTeachersModalOpen, setClearTeachersModalOpen] = useState(false)
+    const [isClearingTeachers, setIsClearingTeachers] = useState(false)
+    const [isClearingCourses, setIsClearingCourses] = useState(false)
     const [reminders] = useState<Reminder[]>([
         { id: 'r1', title: 'Réunion parents/professeurs', due: 'Aujourd’hui - 16:30', priority: 'haute' },
         { id: 'r2', title: 'Valider les emplois du temps', due: 'Demain - 11:00', priority: 'moyenne' },
@@ -52,30 +61,28 @@ export default function DashboardInterface() {
     const [courses, setCourses] = useState<Course[]>([])
     const [classrooms, setClassrooms] = useState<Classroom[]>([])
     const [schedule, setSchedule] = useState<ScheduleSlot[]>([])
+    const [rooms, setRooms] = useState<Room[]>([])
     const [isScheduleLoading, setIsScheduleLoading] = useState(false)
     const [selectedClassroom, setSelectedClassroom] = useState<Classroom | null>(null)
+    const [selectedPhysicalRoom, setSelectedPhysicalRoom] = useState<Room | null>(null)
     const [formError, setFormError] = useState('')
     const [selectedSlot, setSelectedSlot] = useState<{ day: string; time: string } | null>(null)
     const [slotMode, setSlotMode] = useState<'actions' | 'edit'>('actions')
-
     const [teacherForm, setTeacherForm] = useState({ name: '', subject: '' })
-    const [courseForm, setCourseForm] = useState({
-        title: '',
-        duration: '2h',
-        teacherId: '',
-        color: 'blue' as Course['color'],
-    })
+    const [courseForm, setCourseForm] = useState({ title: '', duration: '2h', teacherId: '', color: 'blue' as Course['color'], })
     useEffect(() => {
         const loadPlanningData = async () => {
 
             const [
                 teacherResult,
                 courseResult,
-                classroomResult
+                classroomResult,
+                roomResult
             ] = await Promise.allSettled([
                 getTeachers(),
                 getCourses(),
-                getClassrooms()
+                getClassrooms(),
+                getRooms()
             ])
 
             setTeachers(
@@ -95,29 +102,73 @@ export default function DashboardInterface() {
                     ? classroomResult.value
                     : []
             )
+
+            if (roomResult.status === 'fulfilled') {
+                console.log(
+                    'Salles physiques chargées :',
+                    roomResult.value
+                )
+
+                setRooms(roomResult.value)
+            } else {
+                console.error(
+                    'Erreur chargement salles physiques :',
+                    roomResult.reason
+                )
+
+                setRooms([])
+            }
         }
 
         void loadPlanningData()
     }, [])
 
-    const coursesByToday = useMemo(() => {
-        const today = 'Lundi'
-        return schedule
-            .filter((entry) => entry.day === today)
-            .map((entry) => {
-                const course = courses.find((c) => c.id === entry.courseId)
-                if (!course) return null
-                const teacher = teachers.find((t) => t.id === course.teacherId)
-                return { ...entry, course, teacher }
-            })
-            .filter(Boolean) as Array<{
-                id: string
-                day: string
-                time: string
-                course: Course
-                teacher?: Teacher
-            }>
-    }, [schedule, courses, teachers])
+    const openCreateRoomModal = () => { setRoomError(''), setRoomModalOpen(true) }
+    const closeRoomModal = () => {
+        if (roomSaving) {
+            return
+        }
+        setRoomError('')
+        setRoomModalOpen(false)
+    }
+
+    const handleCreateRoom = async (payload: RoomPayload) => {
+        setRoomSaving(true)
+        setRoomError('')
+
+        try {
+            /*
+             * Création MongoDB via :
+             * POST /api/rooms
+             */
+            await createRoom(payload)
+
+            /*
+             * On recharge depuis MongoDB pour conserver
+             * le backend comme source de vérité.
+             */
+            const refreshedRooms = await getRooms()
+
+            setRooms(refreshedRooms)
+
+            setRoomModalOpen(false)
+
+        } catch (error) {
+            console.error(
+                'Erreur création salle :',
+                error
+            )
+
+            setRoomError(
+                error instanceof Error
+                    ? error.message
+                    : 'Impossible de créer la salle.'
+            )
+
+        } finally {
+            setRoomSaving(false)
+        }
+    }
 
     const totalPlanned = schedule.length
     const activeTeachers = teachers.length
@@ -126,18 +177,45 @@ export default function DashboardInterface() {
         day: string,
         time: string
     ) => {
-        console.log('DROP :', { draggedCourseId, selectedClassroom, day, time })
-        if (!draggedCourseId || !selectedClassroom) {
-            if (!selectedClassroom) {
-                setFormError(
-                    'Sélectionne une salle avant de planifier un cours.'
-                )
-            }
+        console.log('DROP :', {
+            draggedCourseId,
+            selectedClassroom,
+            selectedPhysicalRoom,
+            day,
+            time,
+        })
+
+        /*
+         * Une classe doit être sélectionnée.
+         */
+        if (!selectedClassroom) {
+            setFormError(
+                'Sélectionne une classe avant de planifier un cours.'
+            )
             return
         }
 
-        // Si on déplace un cours déjà présent dans le planning
-        // vers exactement la même case, on ne fait rien.
+        /*
+         * Une salle physique doit être sélectionnée
+         * avant le drag & drop.
+         */
+        if (!selectedPhysicalRoom) {
+            setFormError(
+                'Sélectionne une salle physique avant de déposer le cours.'
+            )
+            return
+        }
+
+        /*
+         * Un cours doit réellement être en cours de déplacement.
+         */
+        if (!draggedCourseId) {
+            return
+        }
+
+        /*
+         * Déplacement vers exactement le même créneau.
+         */
         if (
             draggedScheduleSlot &&
             draggedScheduleSlot.day === day &&
@@ -153,23 +231,26 @@ export default function DashboardInterface() {
 
         try {
             /*
-             * 1. Enregistrer le cours dans sa nouvelle case.
+             * Enregistrement du nouveau créneau.
              *
-             * Cela fonctionne aussi si le cours vient directement
-             * du catalogue.
+             * On dispose maintenant de toutes
+             * les informations nécessaires :
+             *
+             * classe + cours + salle + jour + heure
              */
             await upsertScheduleSlot(
                 selectedClassroom.id,
                 {
                     courseId: draggedCourseId,
+                    roomId: selectedPhysicalRoom.id,
                     day,
                     time,
                 }
             )
 
             /*
-             * 2. Si le cours vient déjà du planning,
-             * supprimer son ancien ScheduleSlot.
+             * Si nous déplaçons un cours déjà présent
+             * dans le planning, supprimer son ancien créneau.
              */
             if (draggedScheduleSlot) {
                 await deleteScheduleSlot(
@@ -179,9 +260,6 @@ export default function DashboardInterface() {
             }
 
             /*
-             * 3. Recharger le planning depuis MongoDB.
-             *
-             * On ne reconstruit pas manuellement le state :
              * MongoDB reste notre source de vérité.
              */
             const refreshedSchedule =
@@ -193,14 +271,12 @@ export default function DashboardInterface() {
 
         } catch (error) {
             console.error(
-                'Erreur déplacement du cours :',
+                'Erreur planification du cours :',
                 error
             )
 
             /*
-             * En cas d'erreur, on recharge quand même MongoDB
-             * pour remettre l'interface dans l'état réellement
-             * enregistré.
+             * En cas d'échec, recharger l'état réel.
              */
             try {
                 const refreshedSchedule =
@@ -209,6 +285,7 @@ export default function DashboardInterface() {
                     )
 
                 setSchedule(refreshedSchedule)
+
             } catch (refreshError) {
                 console.error(
                     'Erreur rechargement planning :',
@@ -219,7 +296,7 @@ export default function DashboardInterface() {
             setFormError(
                 error instanceof Error
                     ? error.message
-                    : 'Impossible de déplacer le cours.'
+                    : 'Impossible de planifier le cours.'
             )
 
         } finally {
@@ -228,8 +305,6 @@ export default function DashboardInterface() {
             setIsScheduleLoading(false)
         }
     }
-
-
 
     const getSlotCourse = (
         day: string,
@@ -387,6 +462,54 @@ export default function DashboardInterface() {
         setOpenMenuId(null);
     };
 
+    const handleClearTeachers = async () => {
+
+        try {
+
+            setIsClearingTeachers(true)
+            setFormError('')
+
+            await deleteAllTeachers()
+
+            /*
+             * Le backend supprime :
+             * - professeurs
+             * - cours
+             * - classes
+             * - créneaux
+             */
+
+            setTeachers([])
+            setCourses([])
+            setClassrooms([])
+            setSchedule([])
+
+            setSelectedClassroom(null)
+
+            setOpenMenuId(null)
+
+            setClearTeachersModalOpen(false)
+
+        } catch (error) {
+
+            console.error(
+                'Erreur suppression des professeurs :',
+                error
+            )
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : 'Impossible de supprimer les professeurs'
+            )
+
+        } finally {
+
+            setIsClearingTeachers(false)
+
+        }
+    }
+
     const confirmDeleteCourse = async () => {
         if (!courseToDelete) return;
 
@@ -526,6 +649,41 @@ export default function DashboardInterface() {
         }
     };
 
+    const handleClearCourses = async () => {
+
+        try {
+
+            setIsClearingCourses(true)
+            setFormError('')
+
+            await deleteAllCourses()
+
+            setCourses([])
+            setSchedule([])
+
+            setOpenMenuId(null)
+            setClearCoursesModalOpen(false)
+
+        } catch (error) {
+
+            console.error(
+                'Erreur vidage catalogue :',
+                error
+            )
+
+            setFormError(
+                error instanceof Error
+                    ? error.message
+                    : 'Impossible de vider le catalogue'
+            )
+
+        } finally {
+
+            setIsClearingCourses(false)
+
+        }
+    }
+
     const handleSelectClassroom = async (
         classroom: Classroom
     ) => {
@@ -636,7 +794,7 @@ export default function DashboardInterface() {
 
                         {!selectedClassroom && (
                             <p className="empty-state">
-                                Sélectionne une salle pour afficher son emploi du temps.
+                                Sélectionne une classe pour afficher son emploi du temps.
                             </p>
                         )}
 
@@ -657,6 +815,8 @@ export default function DashboardInterface() {
                                     <div className="time-label">{time}</div>
                                     {DAYS.map((day) => {
                                         const slotCourse = getSlotCourse(day, time)
+                                        const slot = schedule.find((entry) => entry.day === day && entry.time === time)
+
                                         return (
                                             <div
                                                 key={`${day}-${time}`}
@@ -693,8 +853,12 @@ export default function DashboardInterface() {
                                                         </p>
 
                                                         <p className="card-sub">
-                                                            {selectedClassroom?.name ?? 'Classe non sélectionnée'}
-                                                            | {teachers.find((t) => t.id === slotCourse.teacherId)?.name ?? 'Professeur non assigné'}
+                                                            {slot?.room?.name ?? 'Salle non assignée'}
+                                                            {' | '}
+                                                            {teachers.find(
+                                                                (teacher) =>
+                                                                    teacher.id === slotCourse.teacherId
+                                                            )?.name ?? 'Professeur non assigné'}
                                                         </p>
                                                     </div>
                                                 ) : (
@@ -709,31 +873,54 @@ export default function DashboardInterface() {
                             ))}
                         </div>
                     </section>
+                    <section className="room-dashboard-section">
+                        <RoomManager
+                            rooms={rooms}
+                            selectedRoomId={
+                                selectedPhysicalRoom?.id ?? null
+                            }
+                            onSelectRoom={(room) => {
+                                setSelectedPhysicalRoom(room)
+                                setFormError('')
+                            }}
+                            onCreateRoom={
+                                openCreateRoomModal
+                            }
+                        />
+                    </section>
                 </main>
 
                 <aside className="dashboard-col dashboard-right fade-in">
-                    <div className="panel-header">
-                        <h2>Cours du jour</h2>
-                        <span className="badge">Lundi</span>
-                    </div>
-                    <div className="card-list">
-                        {coursesByToday.map((item) => (
-                            <article key={item.id} className={`soft-card course-pill ${CARD_COLORS[item.course.color]}`}>
-                                <p className="card-title-sm">{item.time} - {item.course.title}</p>
-                                <p className="card-sub">
-                                    {item.teacher?.name ?? 'Professeur non affecté'} | {selectedClassroom?.name ?? 'Classe non sélectionnée'}
-                                </p>
-                            </article>
-                        ))}
-                    </div>
 
-                    <section className="soft-card">
+                    <section className="soft-card courses-catalog-card">
                         <div className="panel-header">
+
                             <h2>Catalogue des cours</h2>
-                            <p className="card-sub">Drag & drop</p>
+
+                            <div className="catalog-header-actions">
+
+                                <span className="card-sub">
+                                    Drag & drop
+                                </span>
+
+                                <button
+                                    type="button"
+                                    className="clear-list-button"
+                                    title="Vider le catalogue"
+                                    aria-label="Vider le catalogue des cours"
+                                    disabled={courses.length === 0}
+                                    onClick={() => {
+                                        setClearCoursesModalOpen(true)
+                                    }}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+
+                            </div>
+
                         </div>
 
-                        <div className="card-list">
+                        <div className="card-list courses-catalog-list">
                             {courses.length === 0 ? (
                                 <p className="empty-state">Aucun cours existant</p>
                             ) : (
@@ -769,11 +956,14 @@ export default function DashboardInterface() {
                                             </div>
 
                                             {/* Menu actions */}
-                                            <div className="course-actions">
+                                            <div className="course-actions" draggable={false} onMouseDown={(e) => e.stopPropagation()} onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }}>
 
                                                 <button
                                                     type="button"
                                                     className="action-menu-button"
+                                                    onMouseDown={(e) => {
+                                                        e.stopPropagation();
+                                                    }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
 
@@ -793,8 +983,13 @@ export default function DashboardInterface() {
 
                                                         <button
                                                             type="button"
-                                                            onClick={(e) => {
+                                                            onMouseDown={(e) => {
                                                                 e.stopPropagation();
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+
                                                                 handleEditCourse(course);
                                                             }}
                                                         >
@@ -805,8 +1000,13 @@ export default function DashboardInterface() {
                                                         <button
                                                             type="button"
                                                             className="delete-action"
-                                                            onClick={(e) => {
+                                                            onMouseDown={(e) => {
                                                                 e.stopPropagation();
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+
                                                                 handleDeleteCourse(course);
                                                             }}
                                                         >
@@ -861,33 +1061,6 @@ export default function DashboardInterface() {
                                                     }))
                                                 }
                                             />
-
-                                            {/* <select
-                                                value={courseForm.classroomId}
-                                                onChange={(e) =>
-                                                    setCourseForm((prev) => ({
-                                                        ...prev,
-                                                        classroomId: e.target.value
-                                                    }))
-                                                }
-                                                disabled={classrooms.length === 0}
-                                            >
-                                                <option value="">
-                                                    {classrooms.length === 0
-                                                        ? 'Aucune salle existante'
-                                                        : 'Choisir une salle'
-                                                    }
-                                                </option>
-
-                                                {classrooms.map((classroom) => (
-                                                    <option
-                                                        key={classroom.id}
-                                                        value={classroom.id}
-                                                    >
-                                                        {classroom.name}
-                                                    </option>
-                                                ))}
-                                            </select> */}
 
                                             <select
                                                 value={courseForm.teacherId}
@@ -1044,8 +1217,30 @@ export default function DashboardInterface() {
 
                     <section className="soft-card teachers-card">
                         <div className="panel-header">
+
                             <h2>Professeurs</h2>
-                            <span className="badge">{teachers.length}</span>
+
+                            <div className="teacher-header-actions">
+
+                                <span className="teacher-count">
+                                    {teachers.length}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    className="clear-list-button"
+                                    title="Supprimer tous les professeurs"
+                                    aria-label="Supprimer tous les professeurs"
+                                    disabled={teachers.length === 0}
+                                    onClick={() =>
+                                        setClearTeachersModalOpen(true)
+                                    }
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+
+                            </div>
+
                         </div>
                         <div className="teacher-list">
                             {teachers.length === 0 ? (
@@ -1065,6 +1260,101 @@ export default function DashboardInterface() {
                     </section>
                 </aside>
             </div>
+
+            {clearTeachersModalOpen && (
+
+                <div className="modal-overlay">
+
+                    <div className="modal-card clear-data-modal">
+
+                        <h2>
+                            Supprimer tous les professeurs ?
+                        </h2>
+
+
+                        <div className="modal-actions">
+
+                            <button
+                                type="button"
+                                className="ghost-btn"
+                                disabled={isClearingTeachers}
+                                onClick={() =>
+                                    setClearTeachersModalOpen(false)
+                                }
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                className="danger-btn"
+                                disabled={isClearingTeachers}
+                                onClick={handleClearTeachers}
+                            >
+                                <Trash2 size={15} />
+
+                                {isClearingTeachers
+                                    ? 'Suppression...'
+                                    : 'Supprimer'}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+
+            {clearCoursesModalOpen && (
+
+                <div className="modal-overlay">
+
+                    <div className="modal-card clear-data-modal">
+
+                        <h2>
+                            Vider le catalogue ?
+                        </h2>
+
+                        <p>
+                            Tous les cours du catalogue ainsi que
+                            les cours déjà placés dans les emplois
+                            du temps seront supprimés.
+                        </p>
+
+                        <div className="modal-actions">
+
+                            <button
+                                type="button"
+                                className="ghost-btn"
+                                disabled={isClearingCourses}
+                                onClick={() =>
+                                    setClearCoursesModalOpen(false)
+                                }
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                className="danger-btn"
+                                disabled={isClearingCourses}
+                                onClick={handleClearCourses}
+                            >
+                                <Trash2 size={15} />
+
+                                {isClearingCourses
+                                    ? 'Suppression...'
+                                    : 'Tout supprimer'}
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
 
             {showTeacherModal && (
                 <div className="modal-overlay" onClick={() => { setShowTeacherModal(false); setFormError('') }}>
@@ -1105,32 +1395,7 @@ export default function DashboardInterface() {
                                 value={courseForm.title}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                             />
-                            {/* <select
-                                value={courseForm.classroomId}
-                                onChange={(e) =>
-                                    setCourseForm((prev) => ({
-                                        ...prev,
-                                        classroomId: e.target.value
-                                    }))
-                                }
-                                disabled={classrooms.length === 0}
-                            >
-                                <option value="">
-                                    {classrooms.length === 0
-                                        ? 'Aucune salle existante'
-                                        : 'Choisir une salle'
-                                    }
-                                </option>
 
-                                {classrooms.map((classroom) => (
-                                    <option
-                                        key={classroom.id}
-                                        value={classroom.id}
-                                    >
-                                        {classroom.name}
-                                    </option>
-                                ))}
-                            </select> */}
                             <select
                                 value={courseForm.teacherId}
                                 onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
@@ -1179,7 +1444,7 @@ export default function DashboardInterface() {
                                 <p className="card-sub">{selectedSlot.day} · {selectedSlot.time}</p>
                                 <h3>{selectedSlotCourse.title}</h3>
                                 <p className="empty-state">
-                                    {selectedClassroom?.name ?? 'Salle non assignée'} · {selectedSlotCourse.duration}
+                                    {selectedClassroom?.name ?? 'Classe non assignée'} · {selectedSlotCourse.duration}
                                 </p>
                                 <div className="action-row">
                                     <button type="button" className="ghost-btn" onClick={closeSlotModal}>Annuler</button>
@@ -1198,32 +1463,7 @@ export default function DashboardInterface() {
                                         value={courseForm.title}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, title: e.target.value }))}
                                     />
-                                    {/* <select
-                                        value={courseForm.classroomId}
-                                        onChange={(e) =>
-                                            setCourseForm((prev) => ({
-                                                ...prev,
-                                                classroomId: e.target.value
-                                            }))
-                                        }
-                                        disabled={classrooms.length === 0}
-                                    >
-                                        <option value="">
-                                            {classrooms.length === 0
-                                                ? 'Aucune salle existante'
-                                                : 'Choisir une salle'
-                                            }
-                                        </option>
 
-                                        {classrooms.map((classroom) => (
-                                            <option
-                                                key={classroom.id}
-                                                value={classroom.id}
-                                            >
-                                                {classroom.name}
-                                            </option>
-                                        ))}
-                                    </select> */}
                                     <select
                                         value={courseForm.teacherId}
                                         onChange={(e) => setCourseForm((prev) => ({ ...prev, teacherId: e.target.value }))}
@@ -1265,6 +1505,15 @@ export default function DashboardInterface() {
                     </div>
                 </div>
             )}
+
+            <RoomModal
+                open={roomModalOpen}
+                room={null}
+                loading={roomSaving}
+                error={roomError}
+                onClose={closeRoomModal}
+                onSubmit={handleCreateRoom}
+            />
 
             {isScheduleLoading && (
                 <div className="planning-loader-overlay">

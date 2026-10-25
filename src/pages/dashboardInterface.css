@@ -1,17 +1,246 @@
 .school-dashboard {
-  min-height: 100vh;
+  height: calc(100dvh - 60px);
+  min-height: 0;
   background: #f2f4f8;
   padding: 14px;
   display: grid;
   grid-template-columns: 1.05fr 2.2fr 1.15fr;
   gap: 14px;
+  align-items: stretch;
   color: #0f172a;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .dashboard-col {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dashboard-right {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.catalog-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clear-list-button {
+  width: 30px;
+  height: 30px;
+
+  border: 1px solid #fecaca;
+  border-radius: 50px;
+
+  background: #fff1f2;
+  color: #dc2626;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.clear-list-button:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.clear-list-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.clear-list-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.clear-data-modal {
+  max-width: 420px;
+}
+
+.clear-data-icon {
+  width: 42px;
+  height: 42px;
+
+  margin-bottom: 12px;
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.clear-data-modal>p {
+  margin-top: 8px;
+
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.danger-btn {
+  border: none;
+  border-radius: 9px;
+
+  padding: 9px 14px;
+
+  background: #dc2626;
+  color: #ffffff;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.danger-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   CATALOGUE DES COURS
+   ========================================= */
+
+.courses-catalog-card {
+  height: 390px;
+  min-height: 390px;
+  max-height: 390px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+
+/* Header toujours visible */
+
+.courses-catalog-card>.panel-header {
+  flex-shrink: 0;
+
+  margin-bottom: 8px;
+}
+
+
+/* Liste des cours scrollable */
+
+.courses-catalog-list {
+  flex: 1 1 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding-right: 4px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+
+/* Scrollbar Chrome / Edge */
+
+.courses-catalog-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.courses-catalog-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.courses-catalog-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.teachers-card {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.teacher-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.teacher-count {
+  padding: 4px 8px;
+  background: #000;
+  color: #fff;
+  border-radius: 50px;
+  font-size: 11px;
+}
+
+.teachers-card .panel-header {
+  flex-shrink: 0;
+}
+
+.teachers-card .teacher-list {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.teachers-card .teacher-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.teachers-card .teacher-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.teachers-card .teacher-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
 }
 
 .soft-card,
@@ -165,11 +394,12 @@ h3 {
 
 .timetable-card {
   padding: 10px;
-  height: 43vh;
+  flex-shrink: 0;
 }
 
 .timetable-grid {
   margin-top: 10px;
+  margin-bottom: 10px;
   display: grid;
   grid-template-columns: 68px repeat(5, 1fr);
   gap: 6px;
@@ -311,22 +541,16 @@ h3 {
 
 .action-menu {
   position: absolute;
-
-  top: calc(100% + 5px);
-  right: 0;
-
+  top: 50%;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
   width: 145px;
-
   background: #ffffff;
-
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-
   padding: 5px;
-
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
-
-  z-index: 100;
+  z-index: 1000;
 }
 
 /* Boutons Modifier / Supprimer */
@@ -572,7 +796,6 @@ h3 {
   align-items: center;
   justify-content: space-between;
 }
-
 
 /* Icône */
 
@@ -904,9 +1127,17 @@ h3 {
 /* CLASSROOM MANAGER                         */
 /* ========================================= */
 
+.classroom-dashboard-section {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .classroom-manager {
-  height: 20em;
   padding: 14px;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -947,7 +1178,6 @@ h3 {
   overflow-x: hidden;
   padding-right: 4px;
   padding-bottom: 6px;
-
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
@@ -1025,10 +1255,12 @@ h3 {
 
   color: #334155;
 }
-
-/* =========================================================
-   CLASSROOM LIST - AFFICHAGE HORIZONTAL
-   ========================================================= */
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
 /* =========================================================
    CLASSROOM ROW
@@ -1163,80 +1395,360 @@ h3 {
    ========================================================= */
 
 .planning-loader-overlay {
-    position: fixed;
-    inset: 0;
+  position: fixed;
+  inset: 0;
 
-    width: 100%;
-    height: 100vh;
+  width: 100%;
+  height: 100vh;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.82);
 
-    z-index: 9999;
+  z-index: 9999;
 }
 
 /* Loader inspiré du composant Uiverse sélectionné */
 
 .planning-loader {
-    position: relative;
+  position: relative;
 
-    width: 64px;
-    height: 64px;
+  width: 64px;
+  height: 64px;
 }
 
 .planning-loader-square {
-    position: absolute;
+  position: absolute;
 
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 
-    background: #111827;
+  background: #111827;
 
-    border-radius: 6px;
+  border-radius: 6px;
 
-    animation: planning-loader-pulse 1.2s infinite ease-in-out;
+  animation: planning-loader-pulse 1.2s infinite ease-in-out;
 }
 
 .square-1 {
-    top: 0;
-    left: 0;
+  top: 0;
+  left: 0;
 }
 
 .square-2 {
-    top: 0;
-    right: 0;
+  top: 0;
+  right: 0;
 
-    animation-delay: 0.15s;
+  animation-delay: 0.15s;
 }
 
 .square-3 {
-    bottom: 0;
-    right: 0;
+  bottom: 0;
+  right: 0;
 
-    animation-delay: 0.3s;
+  animation-delay: 0.3s;
 }
 
 .square-4 {
-    bottom: 0;
-    left: 0;
+  bottom: 0;
+  left: 0;
 
-    animation-delay: 0.45s;
+  animation-delay: 0.45s;
 }
 
 @keyframes planning-loader-pulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
 
-    50% {
-        transform: scale(0.55);
-        opacity: 0.35;
-    }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(0.55);
+    opacity: 0.35;
+  }
+}
+
+/* =========================================================
+   GESTION DES SALLES PHYSIQUES
+   ========================================================= */
+
+.room-dashboard-section {
+  flex: 1 1 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ===============================
+   CONTAINER
+   =============================== */
+
+.room-manager {
+  flex: 1 1 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 12px;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.06);
+
+  overflow: hidden;
+}
+
+
+/* ===============================
+   HEADER
+   =============================== */
+
+.room-manager-header {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 10px;
+}
+
+.room-manager-header h2 {
+  margin: 2px 0 0;
+
+  font-size: 14px;
+}
+
+
+/* ===============================
+   CONTENU SCROLLABLE
+   =============================== */
+
+.room-manager-content {
+  flex: 1 1 0;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding-right: 4px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.room-manager-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.room-manager-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.room-manager-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+
+/* ===============================
+   BLOCS
+   =============================== */
+
+.room-building-group+.room-building-group {
+  margin-top: 12px;
+}
+
+.room-building-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 7px;
+}
+
+.room-building-title {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #334155;
+
+  font-size: 11px;
+}
+
+.room-building-count {
+  min-width: 22px;
+  height: 22px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0 6px;
+
+  border-radius: 999px;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* ===============================
+   GRILLE DES SALLES
+   =============================== */
+
+.room-tiles {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(125px, 1fr));
+
+  gap: 7px;
+}
+
+
+/* ===============================
+   CARREAU
+   =============================== */
+
+.room-tile {
+  min-width: 0;
+  min-height: 64px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+
+  background: #f8fafc;
+
+  color: #0f172a;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.room-tile:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+
+/* ===============================
+   SALLE SÉLECTIONNÉE
+   =============================== */
+
+.room-tile-selected {
+  border: 2px solid #111827;
+
+  background: #f1f5f9;
+}
+
+.room-tile-selected .room-tile-icon {
+  background: #111827;
+  color: #ffffff;
+}
+
+
+/* ===============================
+   ICÔNE
+   =============================== */
+
+.room-tile-icon {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+
+  background: #e2e8f0;
+
+  color: #334155;
+}
+
+
+/* ===============================
+   INFORMATIONS
+   =============================== */
+
+.room-tile-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.room-tile-info strong {
+  overflow: hidden;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.room-tile-info span {
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  color: #64748b;
+
+  font-size: 9px;
+}
+
+
+/* ===============================
+   ÉTAT VIDE
+   =============================== */
+
+.room-manager-empty {
+  min-height: 90px;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
 }
 
 /* Responsive */
@@ -1255,8 +1767,25 @@ h3 {
 
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 980px) {
+
   .school-dashboard {
+    height: auto;
+    min-height: calc(100dvh - 60px);
+
     grid-template-columns: 1fr;
+
+    overflow: visible;
+  }
+
+  .dashboard-col {
+    height: auto;
+    overflow: visible;
+  }
+
+  .classroom-manager,
+  .teachers-card,
+  .courses-catalog-card {
+    max-height: 420px;
   }
 }

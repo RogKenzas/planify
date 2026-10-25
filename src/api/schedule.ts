@@ -8,32 +8,32 @@ export type Teacher = {
 }
 
 export type Course = {
-    id: string
-    _id?: string
-    title: string
-    teacherId: string
-    duration: string
-    color: 'blue' | 'green' | 'purple' | 'yellow'
+  id: string
+  _id?: string
+  title: string
+  teacherId: string
+  duration: string
+  color: 'blue' | 'green' | 'purple' | 'yellow'
 }
 
 export type ScheduleSlot = {
-    id: string
-    classroomId: string
-    courseId: string
-    roomId: string | null
-    day: string
-    time: string
-    course: Course | null
-    room: Room | null
-    createdAt?: string
-    updatedAt?: string
+  id: string
+  classroomId: string
+  courseId: string
+  roomId: string | null
+  day: string
+  time: string
+  course: Course | null
+  room: Room | null
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type CoursePayload = {
-    title: string
-    teacherId: string
-    duration: string
-    color: Course['color']
+  title: string
+  teacherId: string
+  duration: string
+  color: Course['color']
 }
 
 const API_BASE = 'https://backend-planify-jsk6.onrender.com'
@@ -51,6 +51,11 @@ const asArray = <T>(data: T[] | { value?: T[] } | null | undefined): T[] => {
   if (data && Array.isArray(data.value)) return data.value
   return []
 }
+
+const normalizeCourse = (course: Course): Course => ({
+  ...course,
+  id: course.id ?? course._id ?? '',
+})
 
 export const getTeachers = async () => {
   const res = await fetch(`${API_BASE}/api/teachers`)
@@ -76,10 +81,7 @@ export const getCourses = async () => {
 
   const courses = asArray(data)
 
-  return courses.map((course) => ({
-    ...course,
-    id: course.id ?? course._id ?? '',
-  }))
+  return courses.map(normalizeCourse)
 }
 
 export const createCourse = async (
@@ -96,7 +98,9 @@ export const createCourse = async (
     }
   )
 
-  return parseJson<Course>(res)
+  const course = await parseJson<Course>(res)
+
+  return normalizeCourse(course)
 }
 
 export const updateCourse = async (
@@ -114,7 +118,9 @@ export const updateCourse = async (
     }
   )
 
-  return parseJson<Course>(res)
+  const course = await parseJson<Course>(res)
+
+  return normalizeCourse(course)
 }
 
 /**
@@ -143,14 +149,17 @@ export const getClassroomSchedule = async (
  *
  * le backend le remplace.
  */
+export type ScheduleSlotPayload = {
+  courseId: string
+  roomId: string
+  day: string
+  time: string
+}
+
 export const upsertScheduleSlot = async (
   classroomId: string,
-  payload: {
-    courseId: string
-    day: string
-    time: string
-  }
-) => {
+  payload: ScheduleSlotPayload
+): Promise<ScheduleSlot> => {
   const res = await fetch(
     `${API_BASE}/api/schedule/classroom/${classroomId}`,
     {
@@ -183,5 +192,38 @@ export const deleteScheduleSlot = async (
   return parseJson<{
     message: string
     id?: string
+  }>(res)
+}
+
+export const deleteAllCourses = async () => {
+
+  const res = await fetch(
+    `${API_BASE}/api/courses`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  return parseJson<{
+    message: string
+    deletedCourses: number
+    deletedScheduleSlots: number
+  }>(res)
+}
+
+export const deleteAllTeachers = async () => {
+  const res = await fetch(
+    `${API_BASE}/api/teachers`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  return parseJson<{
+    message: string
+    deletedTeachers: number
+    deletedCourses: number
+    deletedClassrooms: number
+    deletedScheduleSlots: number
   }>(res)
 }

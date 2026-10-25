@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 
-import {
-  createClassroom,
-  deleteClassroom,
-  getClassrooms,
-  updateClassroom,
-  type Classroom,
-  type ClassroomPayload,
-} from '../../api/classrooms'
+import { createClassroom, deleteClassroom, getClassrooms, updateClassroom, type Classroom, type ClassroomPayload } from '../../api/classrooms'
 
 import type { Teacher } from '../../api/schedule'
 
@@ -104,7 +97,7 @@ export default function ClassroomManager({
         setError(
           err instanceof Error
             ? err.message
-            : 'Impossible de charger les salles'
+            : 'Impossible de charger les classes'
         )
 
       } finally {
@@ -244,7 +237,7 @@ export default function ClassroomManager({
       setError(
         err instanceof Error
           ? err.message
-          : "Impossible d'enregistrer la salle"
+          : "Impossible d'enregistrer la classe"
       )
 
     } finally {
@@ -311,7 +304,7 @@ export default function ClassroomManager({
       setError(
         err instanceof Error
           ? err.message
-          : 'Impossible de supprimer la salle'
+          : 'Impossible de supprimer la classe'
       )
 
     } finally {
@@ -387,7 +380,7 @@ export default function ClassroomManager({
         <div className="classroom-manager-empty">
 
           <p className="card-sub">
-            Chargement des salles...
+            Chargement des classes...
           </p>
 
         </div>
@@ -399,7 +392,7 @@ export default function ClassroomManager({
         /* =================================== */
 
         <div className="classroom-manager-empty">
-          <p className="text__empty">Aucune salle enregistrée</p>
+          <p className="text__empty">Aucune classe enregistrée</p>
         </div>
 
       ) : (
@@ -472,11 +465,11 @@ export default function ClassroomManager({
               <div>
 
                 <p className="card-sub">
-                  Gestion des salles
+                  Gestion des classes
                 </p>
 
                 <h2>
-                  Supprimer la salle
+                  Supprimer la classe
                 </h2>
 
               </div>
@@ -488,7 +481,7 @@ export default function ClassroomManager({
 
               <p>
 
-                Veux-tu vraiment supprimer la salle{' '}
+                Veux-tu vraiment supprimer la classe{' '}
 
                 <strong>
                   {classroomToDelete.name}
