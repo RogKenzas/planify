@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createCourse, createTeacher, getCourses, getTeachers, updateCourse, getClassroomSchedule, upsertScheduleSlot, deleteScheduleSlot, type Course, type Teacher, type ScheduleSlot, deleteAllCourses, deleteAllTeachers } from '../api/schedule'
 import LeftSideBar from '../components/leftSideBar'
 import TopSideBar from '../components/topSideBar'
@@ -59,7 +59,7 @@ export default function DashboardInterface() {
 
     const [teachers, setTeachers] = useState<Teacher[]>([])
     const [courses, setCourses] = useState<Course[]>([])
-    const [classrooms, setClassrooms] = useState<Classroom[]>([])
+    const [, setClassrooms] = useState<Classroom[]>([])
     const [schedule, setSchedule] = useState<ScheduleSlot[]>([])
     const [rooms, setRooms] = useState<Room[]>([])
     const [isScheduleLoading, setIsScheduleLoading] = useState(false)
